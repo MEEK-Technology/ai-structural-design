@@ -28,19 +28,14 @@ The required steel area was computed using standard reinforcement concrete desig
 
 A dataset was generated using simulated structural parameters to train the AI model.
 
-<div class="span">
-<p>
+<div style="display: flex; gap: 10px;">
     <a href="images/Screenshot_2051.png.png">
-        <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="300"/>
+        <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="45%" />
     </a>
-</p>
 <!-- [![Dataset generation script](images/Screenshot_2051.png)](images/Screenshot_2051.png) -->
-
-<p>
     <a href="images/Screenshot_2052.png">
-        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="300"/>
+        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="45%" />
     </a>
-</p>
 </div>
 <!-- [![Dataset generation terminal print](images/Screenshot_2052.png)](images/Screenshot_2052.png) -->
 
