@@ -9,6 +9,16 @@ def bending_moment(load, span):
     return (load * span**2) / 8
 
 
+def shear_force(load, span, x):
+    """
+    Calculate shear force at distance x from the support (kN)
+    load: kN/m
+    span: m
+    x: m
+    """
+    return (load * span) / 2 - load * x
+
+
 def steel_area(Mu, fy, d):
     """
     Calculate steel area (mm²)
