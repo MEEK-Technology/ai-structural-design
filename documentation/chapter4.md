@@ -32,7 +32,6 @@ A dataset was generated using simulated structural parameters to train the AI mo
     <a href="images/Screenshot_2051.png.png">
         <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="45%" />
     </a>
-<!-- [![Dataset generation script](images/Screenshot_2051.png)](images/Screenshot_2051.png) -->
     <a href="images/Screenshot_2052.png">
         <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="45%" />
     </a>
