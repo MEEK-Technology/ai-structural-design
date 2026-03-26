@@ -37,7 +37,7 @@ A dataset was generated using simulated structural parameters to train the AI mo
 <br>
 <p align="center">
     <a href="images/Screenshot_2052.png">
-        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="500" />
+        <img src="images/Screenshot_2052.png" alt="Dataset generation terminal print" width="500" />
     </a>
 </p>
 <!-- [![Dataset generation terminal print](images/Screenshot_2052.png)](images/Screenshot_2052.png) -->
@@ -61,7 +61,7 @@ A total of 5000 data samples were generated and stored in a CSV file for trainin
 <!-- [![Generated data samples in csv](images/Screenshot_2057.png)](images/Screenshot_2057.png) -->
 <br>
 <p align="center">
-    <a href="images/Screenshot_2058.png.png">
+    <a href="images/Screenshot_2058.png">
         <img src="images/Screenshot_2056.png" alt="Generated data samples in csv" width="500"/>
     </a>
 </p>
