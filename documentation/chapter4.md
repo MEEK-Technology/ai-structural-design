@@ -5,7 +5,7 @@
 
 The beam design module was developed using Python functions to compute structural parameters.
 
-<add screenshots here>
+[![Beam design testing result](documentation\images\Screenshot_2049.png)](documentation\images\Screenshot_2049.png)
  
 The bending moment for a simply supported beam under uniformly distributed load was calculated using the formula:
 
@@ -23,7 +23,9 @@ The required steel area was computed using standard reinforcement concrete desig
 
 A dataset was generated using simulated structural parameters to train the AI model.
 
-<add screenshots here>
+[![Dataset generation script](documentation\images\Screenshot_2051.png)](documentation\images\Screenshot_2051.png)
+
+[![Dataset generation terminal print](documentation\images\Screenshot_2052.png)](documentation\images\Screenshot_2052.png)
 
 The parameters included:
 
@@ -32,10 +34,9 @@ The parameters included:
 - fck (concrete grade 20 - 30)
 - fy (steel grade 500)
 
-<add screenshots here>
-
 For each generated input, the corresponding steel area was calculated using the standard beam design equations.
 
 A total of 5000 data samples were generated and stored in a CSV file for training purposes.
 
-<add screenshots here>
+[![Generated data samples in csv](documentation\images\Screenshot_2057.png)](documentation\images\Screenshot_2057.png)
+[![Generated data samples in csv](documentation\images\Screenshot_2058.png)](documentation\images\Screenshot_2058.png)
