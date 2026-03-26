@@ -28,17 +28,18 @@ The required steel area was computed using standard reinforcement concrete desig
 
 A dataset was generated using simulated structural parameters to train the AI model.
 
-<div style="display: flex; gap: 10px;">
-    <a href="images/Screenshot_2051.png.png">
+<p align="center">
+    <a href="images/Screenshot_2051.png">
         <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="35%" />
     </a>
+</p>
+<!-- [![Dataset generation script](images/Screenshot_2051.png)](images/Screenshot_2051.png) -->
+
+<p align="center">
     <a href="images/Screenshot_2052.png">
         <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="35%" />
     </a>
-    <a href="images/Screenshot_2052.png">
-        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="35%" />
-    </a>
-</div>
+</p>
 <!-- [![Dataset generation terminal print](images/Screenshot_2052.png)](images/Screenshot_2052.png) -->
 
 The parameters included:
@@ -52,14 +53,14 @@ For each generated input, the corresponding steel area was calculated using the 
 
 A total of 5000 data samples were generated and stored in a CSV file for training purposes.
 
-<p align="left">
+<p align="center">
     <a href="images/Screenshot_2057.png.png">
         <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="300"/>
     </a>
 </p>
 <!-- [![Generated data samples in csv](images/Screenshot_2057.png)](images/Screenshot_2057.png) -->
 
-<p align="right">
+<p align="center">
     <a href="images/Screenshot_2058.png.png">
         <img src="images/Screenshot_2056.png" alt="Generated data samples in csv" width="300"/>
     </a>
