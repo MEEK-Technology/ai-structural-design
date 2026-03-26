@@ -10,7 +10,6 @@ The beam design module was developed using Python functions to compute structura
         <img src="images/Screenshot_2049.png" alt="Beam design testing result" width="500"/>
     </a>
 </p>
-
 <!-- [![Beam design testing result](images/Screenshot_2049.png)](images/Screenshot_2049.png) -->
  
 The bending moment for a simply supported beam under uniformly distributed load was calculated using the formula:
@@ -29,9 +28,19 @@ The required steel area was computed using standard reinforcement concrete desig
 
 A dataset was generated using simulated structural parameters to train the AI model.
 
-[![Dataset generation script](images/Screenshot_2051.png)](images/Screenshot_2051.png)
+<p align="left">
+    <a href="images/Screenshot_2051.png.png">
+        <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="500"/>
+    </a>
+</p>
+<!-- [![Dataset generation script](images/Screenshot_2051.png)](images/Screenshot_2051.png) -->
 
-[![Dataset generation terminal print](images/Screenshot_2052.png)](images/Screenshot_2052.png)
+<p align="right">
+    <a href="images/Screenshot_2052.png">
+        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="500"/>
+    </a>
+</p>
+<!-- [![Dataset generation terminal print](images/Screenshot_2052.png)](images/Screenshot_2052.png) -->
 
 The parameters included:
 
@@ -44,6 +53,16 @@ For each generated input, the corresponding steel area was calculated using the 
 
 A total of 5000 data samples were generated and stored in a CSV file for training purposes.
 
-[![Generated data samples in csv](images/Screenshot_2057.png)](images/Screenshot_2057.png)
+<p align="left">
+    <a href="images/Screenshot_2057.png.png">
+        <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="500"/>
+    </a>
+</p>
+<!-- [![Generated data samples in csv](images/Screenshot_2057.png)](images/Screenshot_2057.png) -->
 
-[![Generated data samples in csv](images/Screenshot_2058.png)](images/Screenshot_2058.png)
+<p align="right">
+    <a href="images/Screenshot_2058.png.png">
+        <img src="images/Screenshot_2056.png" alt="Generated data samples in csv" width="500"/>
+    </a>
+</p>
+<!-- [![Generated data samples in csv](images/Screenshot_2058.png)](images/Screenshot_2058.png) -->
