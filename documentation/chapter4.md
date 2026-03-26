@@ -30,10 +30,13 @@ A dataset was generated using simulated structural parameters to train the AI mo
 
 <div style="display: flex; gap: 10px;">
     <a href="images/Screenshot_2051.png.png">
-        <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="45%" />
+        <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="35%" />
     </a>
     <a href="images/Screenshot_2052.png">
-        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="45%" />
+        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="35%" />
+    </a>
+    <a href="images/Screenshot_2052.png">
+        <img src="images/Screenshot_2052.png.png" alt="Dataset generation terminal print" width="35%" />
     </a>
 </div>
 <!-- [![Dataset generation terminal print](images/Screenshot_2052.png)](images/Screenshot_2052.png) -->
