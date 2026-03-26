@@ -6,8 +6,8 @@
 The beam design module was developed using Python functions to compute structural parameters.
 
 <p align="center">
-    <a href="documentation/images/Screenshot_2049.png">
-        <img src="documentation/images/Screenshot_2049.png" alt="Beam design testing result" width="500"/>
+    <a href="images/Screenshot_2049.png">
+        <img src="images/Screenshot_2049.png" alt="Beam design testing result" width="500"/>
     </a>
 </p>
 
