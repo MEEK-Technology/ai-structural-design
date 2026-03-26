@@ -5,7 +5,13 @@
 
 The beam design module was developed using Python functions to compute structural parameters.
 
-[![Beam design testing result](images/Screenshot_2049.png)](images/Screenshot_2049.png)
+<p align="center">
+    <a href="documentation/images/Screenshot_2049.png">
+        <img src="documentation/images/Screenshot_2049.png" alt="Beam design testing result" width="500"/>
+    </a>
+</p>
+
+<!-- [![Beam design testing result](images/Screenshot_2049.png)](images/Screenshot_2049.png) -->
  
 The bending moment for a simply supported beam under uniformly distributed load was calculated using the formula:
 
