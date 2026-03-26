@@ -67,11 +67,13 @@ A total of 5000 data samples were generated and stored in a CSV file for trainin
 </p>
 <!-- [![Generated data samples in csv](images/Screenshot_2058.png)](images/Screenshot_2058.png) -->
 
-<div style="display: flex; gap: 15px; justify-content: center;">
-  <a href="images/Screenshot_2057.png">
-    <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="45%" />
-  </a>
-  <a href="images/Screenshot_2058.png">
-    <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="45%" />
-  </a>
-</div>
+<p align="center">
+    <div style="display: flex; gap: 15px;">
+        <a href="images/Screenshot_2057.png">
+            <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="45%" />
+        </a>
+        <a href="images/Screenshot_2058.png">
+            <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="45%" />
+        </a>
+    </div>
+</p>
