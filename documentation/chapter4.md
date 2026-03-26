@@ -1,4 +1,4 @@
-# Chapter Four - Implementataion & Results
+# Chapter Four - Implementation & Results
 
 
 ## 4.1 Beam Design Implementation
@@ -27,10 +27,10 @@ A dataset was generated using simulated structural parameters to train the AI mo
 
 The parameters included:
 
-Beam span (3m – 10m)
-Load (10 kN/m – 50 kN/m)
-fck (concrete grade 20 - 30)
-fy (steel grade 500)
+- Beam span (3m – 10m)
+- Load (10 kN/m – 50 kN/m)
+- fck (concrete grade 20 - 30)
+- fy (steel grade 500)
 
 <add screenshots here>
 
