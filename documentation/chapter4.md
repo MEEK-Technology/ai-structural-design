@@ -65,3 +65,29 @@ A total of 5000 data samples were generated and stored in a CSV file for trainin
         <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="45%" />
     </a>
 </p>
+
+
+## 4.2 AI Model Development
+
+A machine learning model was developed to predict the required steel area for beam design based on input parameters.
+
+<p align="center">
+    <a href="images/Screenshot_2061.png">
+        <img src="images/Screenshot_2061.png" alt="AI model development script" width="500" />
+    </a>
+</p>
+
+The dataset generated was used to train the model, with the following features:
+
+- Span
+- Load
+- fck
+- fy
+
+The target output was:
+
+- Steel area
+
+A Random Forest Regression algorithm was used for training due to its ability to handle nonlinear relationships and provide accurate predictions.
+
+The trained model was saved and used for making predictions within the system.
