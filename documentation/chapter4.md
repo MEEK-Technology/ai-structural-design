@@ -67,7 +67,7 @@ A total of 5000 data samples were generated and stored in a CSV file for trainin
 </p>
 
 
-## 4.2 AI Model Development
+## 4.3 AI Model Development
 
 A machine learning model was developed to predict the required steel area for beam design based on input parameters.
 
