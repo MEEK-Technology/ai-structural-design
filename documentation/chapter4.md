@@ -33,14 +33,12 @@ A dataset was generated using simulated structural parameters to train the AI mo
         <img src="images/Screenshot_2051.png" alt="Dataset generation script" width="500" />
     </a>
 </p>
-<!-- [![Dataset generation script](images/Screenshot_2051.png)](images/Screenshot_2051.png) -->
-<br>
+
 <p align="center">
     <a href="images/Screenshot_2052.png">
         <img src="images/Screenshot_2052.png" alt="Dataset generation terminal print" width="500" />
     </a>
 </p>
-<!-- [![Dataset generation terminal print](images/Screenshot_2052.png)](images/Screenshot_2052.png) -->
 
 The parameters included:
 
@@ -53,25 +51,11 @@ For each generated input, the corresponding steel area was calculated using the 
 
 A total of 5000 data samples were generated and stored in a CSV file for training purposes.
 
-<p align="center">
-    <a href="images/Screenshot_2057.png">
-        <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="500"/>
-    </a>
-</p>
-<!-- [![Generated data samples in csv](images/Screenshot_2057.png)](images/Screenshot_2057.png) -->
-<br>
-<p align="center">
-    <a href="images/Screenshot_2058.png">
-        <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="500"/>
-    </a>
-</p>
-<!-- [![Generated data samples in csv](images/Screenshot_2058.png)](images/Screenshot_2058.png) -->
-
 <p align="center" gap="10px">
     <a href="images/Screenshot_2057.png">
-        <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="45%" />
+        <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="50%" />
     </a>
     <a href="images/Screenshot_2058.png">
-        <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="45%" />
+        <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="50%" />
     </a>
 </p>
