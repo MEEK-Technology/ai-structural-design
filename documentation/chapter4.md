@@ -90,4 +90,10 @@ The target output was:
 
 A Random Forest Regression algorithm was used for training due to its ability to handle nonlinear relationships and provide accurate predictions.
 
+<p align="center">
+    <a href="images/Screenshot_2062.png">
+        <img src="images/Screenshot_2062.png" alt="trained AI model" width="500" />
+    </a>
+</p>
+
 The trained model was saved and used for making predictions within the system.
