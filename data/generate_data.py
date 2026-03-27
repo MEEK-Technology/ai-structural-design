@@ -9,7 +9,7 @@ def generate_dataset(num_samples=5000):
         span = round(random.uniform(3, 10), 2)   # meters
         load = round(random.uniform(10, 50), 2)  # kN/m
         fck = random.choice([20, 25, 30])        # concrete grade
-        fy = 500                                 # steel grade
+        fy = 460                                 # steel grade
 
         result = design_beam(load, span, fy=fy)
 
