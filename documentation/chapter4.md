@@ -9,7 +9,8 @@ The beam design module was developed using Python functions to compute structura
     <a href="images/Screenshot_2049.png">
         <img src="images/Screenshot_2049.png" alt="Beam design testing result" width="500"/>
     </a>
-    <em>Figure 4.1: Beam design testing result</em>
+    <br/>
+    <em>Figure 4.1a: Beam design testing result</em>
 </p>
 <!-- [![Beam design testing result](images/Screenshot_2049.png)](images/Screenshot_2049.png) -->
  
@@ -28,6 +29,8 @@ The required steel area was computed using standard reinforcement concrete desig
     <a href="images/Screenshot_2060.png">
         <img src="images/Screenshot_2060.png" alt="Beam design testing code" width="500"/>
     </a>
+    <br/>
+    <em>Figure 4.1b: Beam design testing code</em>
 </p>
 
 
@@ -39,12 +42,16 @@ A dataset was generated using simulated structural parameters to train the AI mo
     <a href="images/Screenshot_2065.png">
         <img src="images/Screenshot_2065.png" alt="Dataset generation script" width="500" />
     </a>
+        <br/>
+        <em>Figure 4.2a: Dataset generation script</em>
 </p>
 
 <p align="center">
     <a href="images/Screenshot_2066.png">
         <img src="images/Screenshot_2066.png" alt="Dataset generation terminal print" width="500" />
     </a>
+    <br/>
+    <em>Figure 4.2b: Dataset generation terminal print</em>
 </p>
 
 The parameters included:
@@ -59,12 +66,20 @@ For each generated input, the corresponding steel area was calculated using the 
 A total of 5000 data samples were generated and stored in a CSV file for training purposes.
 
 <p align="center">
-    <a href="images/Screenshot_2067.png">
-        <img src="images/Screenshot_2067.png" alt="Generated data samples in csv" width="45%" />
-    </a>
-    <a href="images/Screenshot_2068.png">
-        <img src="images/Screenshot_2068.png" alt="Generated data samples in csv" width="45%" />
-    </a>
+    <p align="center">
+        <a href="images/Screenshot_2067.png">
+            <img src="images/Screenshot_2067.png" alt="Generated data samples in csv" width="45%" />
+        </a>
+        <br/>
+        <em>Figure 4.2c: Generated data samples in csv</em>
+    </p>
+    <p align="center">
+        <a href="images/Screenshot_2068.png">
+            <img src="images/Screenshot_2068.png" alt="Generated data samples in csv" width="45%" />
+        </a>
+        <br/>
+        <em>Figure 4.2d: Generated data samples in csv</em>
+    </p>
 </p>
 
 
@@ -76,6 +91,8 @@ A machine learning model was developed to predict the required steel area for be
     <a href="images/Screenshot_2061.png">
         <img src="images/Screenshot_2061.png" alt="AI model development script" width="500" />
     </a>
+    <br/>
+    <em>Figure 4.3a: AI model development script</em>
 </p>
 
 The dataset generated was used to train the model, with the following features:
@@ -95,6 +112,8 @@ A Random Forest Regression algorithm was used for training due to its ability to
     <a href="images/Screenshot_2062.png">
         <img src="images/Screenshot_2062.png" alt="trained AI model" width="500" />
     </a>
+    <br/>
+    <em>Figure 4.3b: trained AI model</em>
 </p>
 
 The trained model was saved as "model.pkl" and used for making predictions within the system.
@@ -105,6 +124,8 @@ The result output from the model was compared with the calculated steel area fro
     <a href="images/Screenshot_2069.png">
         <img src="images/Screenshot_2069.png" alt="AI generated Steel Area result" width="500" />
     </a>
+    <br/>
+    <em>Figure 4.3c: AI generated Steel Area result</em>
 </p>
 
 
@@ -125,5 +146,7 @@ The inclusion of both concrete and steel grades allowed the model to learn the i
     <a href="images/Screenshot_2071.png">
         <img src="images/Screenshot_2071.png" alt="Model input features" width="500" />
     </a>
+    <br/>
+    <em>Figure 4.4a: Model input features</em>
 </p>
 
