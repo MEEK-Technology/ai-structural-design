@@ -41,8 +41,8 @@ A dataset was generated using simulated structural parameters to train the AI mo
 </p>
 
 <p align="center">
-    <a href="images/Screenshot_2052.png">
-        <img src="images/Screenshot_2052.png" alt="Dataset generation terminal print" width="500" />
+    <a href="images/Screenshot_2066.png">
+        <img src="images/Screenshot_2066.png" alt="Dataset generation terminal print" width="500" />
     </a>
 </p>
 
@@ -58,11 +58,11 @@ For each generated input, the corresponding steel area was calculated using the 
 A total of 5000 data samples were generated and stored in a CSV file for training purposes.
 
 <p align="center">
-    <a href="images/Screenshot_2057.png">
-        <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="45%" />
+    <a href="images/Screenshot_2067.png">
+        <img src="images/Screenshot_2067.png" alt="Generated data samples in csv" width="45%" />
     </a>
-    <a href="images/Screenshot_2058.png">
-        <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="45%" />
+    <a href="images/Screenshot_2068.png">
+        <img src="images/Screenshot_2068.png" alt="Generated data samples in csv" width="45%" />
     </a>
 </p>
 
