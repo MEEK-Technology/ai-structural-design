@@ -121,8 +121,8 @@ These parameters were used to improve the accuracy of predictions and better ref
 The inclusion of both concrete and steel grades allowed the model to learn the influence of material properties on the required steel area for beam design.
 
 <p align="center">
-    <a href="images/Screenshot_2070.png">
-        <img src="images/Screenshot_2070.png" alt="Model input features" width="500" />
+    <a href="images/Screenshot_2071.png">
+        <img src="images/Screenshot_2071.png" alt="Model input features" width="500" />
     </a>
 </p>
 
