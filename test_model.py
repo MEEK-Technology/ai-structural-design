@@ -8,7 +8,7 @@ model = joblib.load("model.pkl")
 span = 6
 load = 25
 fck = 30
-fy = 500
+fy = 460
 
 # fck = fck or 30 # To use default if user doesnt provide fck
 # # fy = fy or 500 # To use default if user doesnt provide fy
