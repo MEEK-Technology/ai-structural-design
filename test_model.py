@@ -10,6 +10,9 @@ load = 25
 fck = 30
 fy = 500
 
+# fck = fck or 30 # To use default if user doesnt provide fck
+# # fy = fy or 500 # To use default if user doesnt provide fy
+
 # Test prediction
 prediction = model.predict([[span, load, fck, fy]])
 

@@ -96,6 +96,16 @@ A Random Forest Regression algorithm was used for training due to its ability to
     </a>
 </p>
 
-The trained model was saved and used for making predictions within the system.
+The trained model was saved as "model.pkl" and used for making predictions within the system.
 
 
+## 4.4 Model Input Features
+
+The AI model was trained using four input features:
+
+- Span
+- Load
+- Concrete strength/grade (fck)
+- Steel strength/grade (fy)
+
+These parameters were used to improve the accuracy of predictions and better reflect real-world structural design conditions.
