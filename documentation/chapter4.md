@@ -9,7 +9,6 @@ The beam design module was developed using Python functions to compute structura
     <a href="images/Screenshot_2049.png">
         <img src="images/Screenshot_2049.png" alt="Beam design testing result" width="500"/>
     </a>
-    <br/>
     <em>Figure 4.1: Beam design testing result</em>
 </p>
 <!-- [![Beam design testing result](images/Screenshot_2049.png)](images/Screenshot_2049.png) -->
