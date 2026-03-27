@@ -51,11 +51,11 @@ For each generated input, the corresponding steel area was calculated using the 
 
 A total of 5000 data samples were generated and stored in a CSV file for training purposes.
 
-<p align="center" gap="10px">
+<p align="center">
     <a href="images/Screenshot_2057.png">
-        <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="50%" />
+        <img src="images/Screenshot_2057.png" alt="Generated data samples in csv" width="45%" />
     </a>
     <a href="images/Screenshot_2058.png">
-        <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="50%" />
+        <img src="images/Screenshot_2058.png" alt="Generated data samples in csv" width="45%" />
     </a>
 </p>
