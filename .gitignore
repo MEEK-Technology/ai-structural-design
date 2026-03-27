@@ -19,5 +19,6 @@ build/
 *.swo
 *.bak
 *.tmp
+*.txt
 *.csv
 *.pkl

@@ -50,7 +50,7 @@ The parameters included:
 
 - Beam span (3m – 10m)
 - Load (10 kN/m – 50 kN/m)
-- fck (concrete grade 20 - 30)
+- fck (concrete grade 20, 25, 30)
 - fy (steel grade 500)
 
 For each generated input, the corresponding steel area was calculated using the standard beam design equations.
@@ -97,3 +97,5 @@ A Random Forest Regression algorithm was used for training due to its ability to
 </p>
 
 The trained model was saved and used for making predictions within the system.
+
+
