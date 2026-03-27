@@ -23,6 +23,12 @@ Where:
 
 The required steel area was computed using standard reinforcement concrete design equations.
 
+<p align="center">
+    <a href="images/Screenshot_2060.png">
+        <img src="images/Screenshot_2060.png" alt="Beam design testing code" width="500"/>
+    </a>
+</p>
+
 
 ## 4.2 Dataset Generation
 
