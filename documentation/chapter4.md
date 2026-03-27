@@ -98,6 +98,14 @@ A Random Forest Regression algorithm was used for training due to its ability to
 
 The trained model was saved as "model.pkl" and used for making predictions within the system.
 
+The result output from the model was compared with the calculated steel area from the beam design module to evaluate the accuracy of predictions.
+
+<p align="center">
+    <a href="images/Screenshot_2069.png">
+        <img src="images/Screenshot_2069.png" alt="AI generated Steel Area result" width="500" />
+    </a>
+</p>
+
 
 ## 4.4 Model Input Features
 
@@ -109,3 +117,12 @@ The AI model was trained using four input features:
 - Steel strength/grade (fy)
 
 These parameters were used to improve the accuracy of predictions and better reflect real-world structural design conditions.
+
+The inclusion of both concrete and steel grades allowed the model to learn the influence of material properties on the required steel area for beam design.
+
+<p align="center">
+    <a href="images/Screenshot_2070.png">
+        <img src="images/Screenshot_2070.png" alt="Model input features" width="500" />
+    </a>
+</p>
+
