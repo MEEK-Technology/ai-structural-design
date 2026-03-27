@@ -51,7 +51,7 @@ The parameters included:
 - Beam span (3m – 10m)
 - Load (10 kN/m – 50 kN/m)
 - fck (concrete grade 20, 25, 30)
-- fy (steel grade 500)
+- fy (steel grade 460)
 
 For each generated input, the corresponding steel area was calculated using the standard beam design equations.
 
