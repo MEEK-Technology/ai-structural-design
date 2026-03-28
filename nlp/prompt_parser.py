@@ -17,6 +17,9 @@ def extract_parameters(text):
 
     # Steel strength (e.g., 500 MPa)
     fy_match = re.search(r'(\d+)\s*MPa', text, re.IGNORECASE)
+    fy_match = re.search(r'(?:fy|steel grade|grade of steel)?\s*(\d+)\s*(?:MPa)?', text,
+    re.IGNORECASE
+)
 
     return {
         "span": float(span_match.group(1)) if span_match else None,
