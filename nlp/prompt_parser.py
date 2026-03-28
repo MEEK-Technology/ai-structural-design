@@ -8,7 +8,8 @@ def extract_parameters(text):
     load_match = re.search(r'(\d+\.?\d*)\s*kN/?m', text, re.IGNORECASE)
 
     # Concrete strength (e.g., grade 30 or fck 30)
-    fck_match = re.search(r'(?:grade|fck)\s*(\d+)', text, re.IGNORECASE)
+    # fck_match = re.search(r'(?:grade|fck)\s*(\d+)', text, re.IGNORECASE)
+    fcu_match = re.search(r'(?:fcu|fck|concrete grade|grade of concrete)\s*(\d+)', text, re.IGNORECASE)
 
     # Steel strength (e.g., 500 MPa)
     fy_match = re.search(r'(\d+)\s*MPa', text, re.IGNORECASE)
