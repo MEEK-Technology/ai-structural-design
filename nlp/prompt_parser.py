@@ -1,12 +1,12 @@
 import re
 
 def extract_parameters(text):
-    # Span (e.g., 6m span or span 6m)
+    # Span (e.g., 6m or span 6m)
     # span_match = re.search(r'(\d+\.?\d*)\s*m', text)
     span_match = re.search(r'(\d+\.?\d*)\s*m', text) or \
                  re.search(r'span\s*(\d+\.?\d*)', text, re.IGNORECASE)
 
-    # Load (e.g., 25kN/m)
+    # Load (e.g., 25kN/m or load 25 kN/m)
     # load_match = re.search(r'(\d+\.?\d*)\s*kN/?m', text, re.IGNORECASE)
     load_match = re.search(r'(\d+\.?\d*)\s*kN/?m', text, re.IGNORECASE) or \
                  re.search(r'load\s*(\d+\.?\d*)', text, re.IGNORECASE)
