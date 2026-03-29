@@ -16,16 +16,21 @@ def extract_parameters(text):
     fcu_match = re.search(r'(?:fcu|fck|concrete grade|grade of concrete)\s*(\d+)', text, re.IGNORECASE)
 
     # Steel strength (e.g., 500 MPa)
-    fy_match = re.search(r'(\d+)\s*MPa', text, re.IGNORECASE)
-    fy_match = re.search(r'(?:fy|steel grade|grade of steel)?\s*(\d+)\s*(?:MPa)?', text,
-    re.IGNORECASE
-)
+    # fy_match = re.search(r'(\d+)\s*MPa', text, re.IGNORECASE)
+    fy_match = re.search(r'(?:fy|steel grade|grade of steel)?\s*(\d+)\s*(?:MPa|fy)?', text, re.IGNORECASE)
+    # fy_match = re.search(r'(?:fy|steel grade|grade of steel)\s*(\d+)|(\d+)\s*MPa', text, re.IGNORECASE)
+
+    # fy_value = None
+    # if fy_match:
+    #     fy_value = fy_match.group(1) or fy_match.group(2)
+
 
     return {
         "span": float(span_match.group(1)) if span_match else None,
         "load": float(load_match.group(1)) if load_match else None,
         "fck": float(fcu_match.group(1)) if fcu_match else None,
         "fy": float(fy_match.group(1)) if fy_match else None,
+        # "fy": float(fy_value) if fy_value else None,
     }
 
 
