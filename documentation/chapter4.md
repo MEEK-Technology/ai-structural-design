@@ -129,7 +129,7 @@ The AI model was trained using four input features:
 
 - Span
 - Load
-- Concrete strength/grade (fck)
+- Concrete strength/grade (fcu/fck)
 - Steel strength/grade (fy)
 
 These parameters were used to improve the accuracy of predictions and better reflect real-world structural design conditions.
