@@ -153,8 +153,24 @@ The system extracts key parameters such as:
 
 - Span
 - Load
-- Concrete strength/grade (fck)
+- Concrete strength/grade (fcu/fck)
 - Steel strength/grade (fy)
+
+<p align="center">
+    <a href="images/Screenshot_2077.png">
+        <img src="images/Screenshot_2077.png" alt="Natural language parameters extracter" width="500" />
+    </a>
+    <br/>
+    <em>Figure 4.5a: Natural language parameters extracter</em>
+</p>
+
+<p align="center">
+    <a href="images/Screenshot_2075.png">
+        <img src="images/Screenshot_2075.png" alt="Prompt to parameters testing" width="500" />
+    </a>
+    <br/>
+    <em>Figure 4.5b: Prompt to parameters testing</em>
+</p>
 
 Pattern matching techniques using regular expressions were used to identify and extract values from user input.
 
