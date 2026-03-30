@@ -67,10 +67,10 @@ A total of 5000 data samples were generated and stored in a CSV file for trainin
 
 <p align="center">
     <a href="images/Screenshot_2067.png">
-        <img src="images/Screenshot_2067.png" alt="Generated data samples in csv" width="45%" />
+        <img src="images/Screenshot_2067.png" alt="Generated data samples in csv-1" width="45%" />
     </a>
     <a href="images/Screenshot_2068.png">
-        <img src="images/Screenshot_2068.png" alt="Generated data samples in csv" width="45%" />
+        <img src="images/Screenshot_2068.png" alt="Generated data samples in csv-2" width="45%" />
     </a>
     <br/>
     <em>Figure 4.2c & 4.2d: Generated data samples in csv</em>
@@ -183,5 +183,17 @@ A backend API was developed to integrate the AI model, engineering calculations,
 
 The API was implemented using FastAPI and allows users to send input data either manually or as a natural language prompt.
 
+<p align="center">
+    <a href="images/Screenshot_2087.png">
+        <img src="images/Screenshot_2087.png" alt="Testing the API-1" width="45%" />
+    </a>
+    <a href="images/Screenshot_2088.png">
+        <img src="images/Screenshot_2088.png" alt="Testing the API-2" width="45%" />
+    </a>
+    <br/>
+    <em>Figure 4.6a & 4.6b: Testing the API using natural language prompts</em>
+</p>
+
 The system processes the input, performs AI-based prediction, computes structural parameters, and returns the results in a structured format.
+
 
