@@ -144,3 +144,18 @@ The inclusion of both concrete and steel grades allowed the model to learn the i
     <em>Figure 4.4a: Model input features</em>
 </p>
 
+
+## 4.5 Prompt-Based Input System
+
+A prompt-based input system was developed to allow users to input structural parameters using natural language.
+
+The system extracts key parameters such as:
+
+- Span
+- Load
+- Concrete strength/grade (fck)
+- Steel strength/grade (fy)
+
+Pattern matching techniques using regular expressions were used to identify and extract values from user input.
+
+Default values were applied for missing parameters to ensure reliable system performance.
