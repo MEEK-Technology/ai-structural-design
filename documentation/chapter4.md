@@ -197,3 +197,18 @@ The API was implemented using FastAPI and allows users to send input data either
 The system processes the input, performs AI-based prediction, computes structural parameters, and returns the results in a structured format.
 
 
+## 4.7 Flexible Prompt Interpretation
+
+The system was enhanced to support flexible natural language input by allowing multiple representations of structural parameters.
+
+For example:
+
+Concrete strength can be entered as “fcu”, “fck”, “concrete grade”, or “grade of concrete”
+Steel strength can be entered as “fy”, “steel grade”, or “grade of steel”
+
+The system also supports different positional formats such as:
+
+“6m span”
+“span 6m”
+
+This improves usability and allows the system to better interpret human language inputs.
