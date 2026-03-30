@@ -212,3 +212,13 @@ The system also supports different positional formats such as:
 “span 6m”
 
 This improves usability and allows the system to better interpret human language inputs.
+
+<p align="center">
+    <a href="images/Screenshot_2077.png">
+        <img src="images/Screenshot_2077.png" alt="Flexible Prompt Interpretation" width="500" />
+    </a>
+    <br/>
+    <em>Figure 4.7a: Flexible Prompt Interpretation</em>
+</p>
+
+
