@@ -22,7 +22,7 @@ def predict(data: dict):
 
     span = params["span"]
     load = params["load"]
-    fck = params["fck"]
+    fck = params["fcu"] if "fcu" in params else params["fck"]
     fy = params["fy"]
 
     # AI Prediction

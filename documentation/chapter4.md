@@ -177,3 +177,11 @@ Pattern matching techniques using regular expressions were used to identify and 
 Default values were applied for missing parameters to ensure reliable system performance.
 
 
+## 4.6 System Integration and API Development
+
+A backend API was developed to integrate the AI model, engineering calculations, and prompt-based input system.
+
+The API was implemented using FastAPI and allows users to send input data either manually or as a natural language prompt.
+
+The system processes the input, performs AI-based prediction, computes structural parameters, and returns the results in a structured format.
+
