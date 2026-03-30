@@ -13,7 +13,8 @@ model = joblib.load("model.pkl")
 
 @app.post("/predict")
 def predict(data: dict):
-    # Handle prompt input
+
+    # Handle prompt input or direct parameters
     if "prompt" in data:
         params = extract_parameters(data["prompt"])
         params = apply_defaults(params)
@@ -25,7 +26,7 @@ def predict(data: dict):
     fck = params["fcu"] if "fcu" in params else params["fck"]
     fy = params["fy"]
 
-    # AI Prediction
+    # AI input for model
     input_df = pd.DataFrame([{
         "span": span,
         "load": load,
