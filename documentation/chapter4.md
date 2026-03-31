@@ -282,4 +282,16 @@ Wall Load = Density × Thickness × Height
 
 The system automatically computes wall load when parameters are provided and adds it to the beam load to determine the total load acting on the structure.
 
+This allows for a more comprehensive analysis of structural behavior under combined loading conditions.
+
+
+## 4.12 Reinforcement Design Module
+
+A reinforcement design module was implemented to convert the required steel area into practical reinforcement detailing.
+
+Standard bar diameters were considered, and the number of bars required was computed based on the area of each bar.
+
+The system selects the most efficient reinforcement option that satisfies the required steel area with minimal excess.
+
+The reinforcement design recommendations are provided in the API response, allowing users to easily understand the required reinforcement for their beam design.
 
