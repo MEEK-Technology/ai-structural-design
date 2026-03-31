@@ -35,6 +35,9 @@ def extract_parameters(text):
         "load": float(load_match.group(1)) if load_match else None,
         "fcu": float(fcu_match.group(1)) if fcu_match else None,
         "fy": float(fy_value) if fy_value else None,
+        "wall_height": float(height_match.group(1)) if height_match else None,
+        "wall_thickness": float(thickness_match.group(1)) if thickness_match else None,
+        "density": float(density_match.group(1)) if density_match else None,
     }
 
 
