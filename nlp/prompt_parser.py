@@ -38,7 +38,6 @@ def extract_parameters(text):
         "wall_height": float(height_match.group(1)) if height_match else None,
         "wall_thickness": float(thickness_match.group(1)) if thickness_match else None,
         "density": float(density_match.group(1)) if density_match else None,
-        
     }
 
 
