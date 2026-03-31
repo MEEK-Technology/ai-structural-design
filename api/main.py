@@ -40,21 +40,21 @@ def predict(data: dict):
     moment = bending_moment(load, span)
     x, shear, moment_curve = generate_diagrams(load, span)
 
-    # return {
-    #     "input": params,
+    return {
+        "input": params,
     #     "results": {
     #         "steel_area": round(float(steel_area), 2),
     #         "bending_moment": round(moment, 2)
     #     }
     # }
 
-    return {
-        "input": {
-            "span": span,
-            "load": load,
-            "fcu": fcu,
-            "fy": fy
-        },
+    # return {
+    #     "input": {
+    #         "span": span,
+    #         "load": load,
+    #         "fcu": fcu,
+    #         "fy": fy
+    #     },
         "results": {
             "steel_area": round(float(steel_area), 2),
             "bending_moment": round(moment, 2)
