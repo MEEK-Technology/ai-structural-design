@@ -282,3 +282,4 @@ Wall Load = Density × Thickness × Height
 
 The system automatically computes wall load when parameters are provided and adds it to the beam load to determine the total load acting on the structure.
 
+

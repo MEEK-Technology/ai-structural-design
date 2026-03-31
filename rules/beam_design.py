@@ -1,5 +1,7 @@
 # rules/beam_design.py
 
+import math
+
 def bending_moment(load, span):
     """
     Calculate bending moment (kNm)
@@ -42,3 +44,27 @@ def design_beam(load, span, fy=500, d=450):
         "bending_moment": round(Mu, 2),
         "steel_area": round(As, 2)
     }
+
+
+def recommend_reinforcement(As_required):
+    bar_sizes = [10, 12, 16, 20, 25]
+
+    solutions = []
+
+    for d in bar_sizes:
+        area_bar = (math.pi * d**2) / 4
+
+        num_bars = math.ceil(As_required / area_bar)
+
+        provided_area = num_bars * area_bar
+
+        solutions.append({
+            "diameter": d,
+            "bars": num_bars,
+            "provided_area": round(provided_area, 2)
+        })
+
+    # Pick best (least excess)
+    best = min(solutions, key=lambda x: x["provided_area"])
+
+    return best, solutions
