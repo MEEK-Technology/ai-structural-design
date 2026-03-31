@@ -4,6 +4,9 @@ import pandas as pd
 
 from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall_load
 from rules.beam_design import bending_moment, recommend_reinforcement
+from rules.beam_design import steel_area as calc_steel_area
+
+manual_As = calc_steel_area(moment)
 
 app = FastAPI()
 
@@ -39,11 +42,11 @@ def predict(data: dict):
     }])
 
     if params.get("wall_height") and params.get("wall_thickness") and params.get("density"):
-    wall_load = calculate_wall_load(
-        params["density"],
-        params["wall_thickness"],
-        params["wall_height"]
-    )
+        wall_load = calculate_wall_load(
+            params["density"],
+            params["wall_thickness"],
+            params["wall_height"]
+        )
 
     steel_area = model.predict(input_df)[0]
     best_reinf, options = recommend_reinforcement(steel_area)
@@ -52,22 +55,23 @@ def predict(data: dict):
     moment = bending_moment(total_load, span)
     x, shear, moment_curve, load_curve = generate_diagrams(total_load, load, span)
 
-    # return {
-    #     "input": params,
+    return {
+        "input": params,
     #     "results": {
     #         "steel_area": round(float(steel_area), 2),
     #         "bending_moment": round(moment, 2)
     #     }
     # }
 
-    return {
-        "input": {
-            "span": span,
-            "load": load,
-            "fcu": fcu,
-            "fy": fy
-        },
+    # return {
+    #     "input": {
+    #         "span": span,
+    #         "load": load,
+    #         "fcu": fcu,
+    #         "fy": fy
+    #     },
         "results": {
+            "steel_area_manual": round(manual_As, 2), #if needed # Comparison of AI with manual calculation
             "steel_area": round(float(steel_area), 2),
             "bending_moment": round(moment, 2),
             "wall_load": round(wall_load, 2),

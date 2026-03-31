@@ -295,3 +295,10 @@ The system selects the most efficient reinforcement option that satisfies the re
 
 The reinforcement design recommendations are provided in the API response, allowing users to easily understand the required reinforcement for their beam design.
 
+## 4.13 Model Validation
+
+The AI-predicted steel area was compared with values obtained from conventional design equations.
+
+This comparison was carried out to validate the accuracy of the model and ensure reliability of the system outputs.
+
+
