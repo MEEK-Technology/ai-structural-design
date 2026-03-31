@@ -38,12 +38,51 @@ def predict(data: dict):
 
     # Engineering Calculation
     moment = bending_moment(load, span)
+    x, shear, moment_curve = generate_diagrams(load, span)
+
+    # return {
+    #     "input": params,
+    #     "results": {
+    #         "steel_area": round(float(steel_area), 2),
+    #         "bending_moment": round(moment, 2)
+    #     }
+    # }
 
     return {
-        "input": params,
+        "input": {
+            "span": span,
+            "load": load,
+            "fcu": fcu,
+            "fy": fy
+        },
         "results": {
             "steel_area": round(float(steel_area), 2),
             "bending_moment": round(moment, 2)
+        },
+        "graphs": {
+            "x": x,
+            "shear": shear,
+            "moment": moment_curve
         }
     }
 
+
+def generate_diagrams(load, span):
+    x_vals = []
+    shear_vals = []
+    moment_vals = []
+
+    steps = 20
+    dx = span / steps
+
+    for i in range(steps + 1):
+        x = i * dx
+
+        shear = (load * span / 2) - (load * x)
+        moment = (load * x / 2) * (span - x)
+
+        x_vals.append(round(x, 2))
+        shear_vals.append(round(shear, 2))
+        moment_vals.append(round(moment, 2))
+
+    return x_vals, shear_vals, moment_vals

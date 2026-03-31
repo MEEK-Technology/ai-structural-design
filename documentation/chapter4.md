@@ -236,3 +236,21 @@ To maintain compatibility with the trained AI model, the extracted concrete stre
 This approach ensures both flexibility in user input and consistency in model performance.
 
 
+## 4.9 Frontend Development
+
+A user interface was developed using HTML, CSS, and JavaScript to allow interaction with the system.
+
+The interface allows users to input design prompts and view computed structural results.
+
+The frontend communicates with the backend API using HTTP requests and displays the results dynamically.
+
+<p align="center">
+    <a href="images/Screenshot_2089.png">
+        <img src="images/Screenshot_2089.png" alt="Frontend interface" width="500" />
+    </a>
+    <br/>
+    <em>Figure 4.9a: Frontend interface</em>
+</p>
+
+
+
