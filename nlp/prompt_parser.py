@@ -21,6 +21,10 @@ def extract_parameters(text):
     # fy_match = re.search(r'(\d+)\s*MPa', text, re.IGNORECASE)
     fy_match = re.search(r'(?:fy|steel grade|grade of steel)\s*(\d+)|(\d+)\s*MPa', text, re.IGNORECASE)
 
+    height_match = re.search(r'(?:height)\s*(\d+\.?\d*)', text)
+    thickness_match = re.search(r'(?:thickness)\s*(\d+\.?\d*)', text)
+    density_match = re.search(r'(?:density|unit weight)\s*(\d+\.?\d*)', text)
+
     fy_value = None
     if fy_match:
         fy_value = fy_match.group(1) or fy_match.group(2)
