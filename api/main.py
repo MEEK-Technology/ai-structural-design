@@ -3,7 +3,7 @@ import joblib
 import pandas as pd
 
 from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall_load
-from rules.beam_design import bending_moment
+from rules.beam_design import bending_moment, recommend_reinforcement
 
 app = FastAPI()
 
@@ -46,6 +46,7 @@ def predict(data: dict):
     )
 
     steel_area = model.predict(input_df)[0]
+    best_reinf, options = recommend_reinforcement(steel_area)
 
     # Engineering Calculation
     moment = bending_moment(total_load, span)
@@ -77,6 +78,11 @@ def predict(data: dict):
             "shear": shear,
             "moment": moment_curve
             "load": load_curve
+        }
+        "reinforcement": {
+            "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
+            "provided_area": best_reinf["provided_area"],
+            "all_options": options
         }
     }
 
