@@ -38,23 +38,23 @@ def predict(data: dict):
 
     # Engineering Calculation
     moment = bending_moment(load, span)
-    x, shear, moment_curve = generate_diagrams(load, span)
+    x, shear, moment_curve, load_curve = generate_diagrams(load, span)
 
-    return {
-        "input": params,
+    # return {
+    #     "input": params,
     #     "results": {
     #         "steel_area": round(float(steel_area), 2),
     #         "bending_moment": round(moment, 2)
     #     }
     # }
 
-    # return {
-    #     "input": {
-    #         "span": span,
-    #         "load": load,
-    #         "fcu": fcu,
-    #         "fy": fy
-    #     },
+    return {
+        "input": {
+            "span": span,
+            "load": load,
+            "fcu": fcu,
+            "fy": fy
+        },
         "results": {
             "steel_area": round(float(steel_area), 2),
             "bending_moment": round(moment, 2)
@@ -63,6 +63,7 @@ def predict(data: dict):
             "x": x,
             "shear": shear,
             "moment": moment_curve
+            "load": load_curve
         }
     }
 
@@ -71,6 +72,7 @@ def generate_diagrams(load, span):
     x_vals = []
     shear_vals = []
     moment_vals = []
+    load_vals = [load for _ in x_vals]
 
     steps = 20
     dx = span / steps
@@ -85,4 +87,4 @@ def generate_diagrams(load, span):
         shear_vals.append(round(shear, 2))
         moment_vals.append(round(moment, 2))
 
-    return x_vals, shear_vals, moment_vals
+    return x_vals, shear_vals, moment_vals, load_vals

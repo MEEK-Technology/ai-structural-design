@@ -16,7 +16,7 @@
 // }
 
 
-let shearChart, momentChart;
+let shearChart, momentChart, loadChart;
 
 async function generate() {
     const prompt = document.getElementById("prompt").value;
@@ -38,11 +38,25 @@ async function generate() {
 }
 
 function drawCharts(graphs) {
+    const ctx3 = document.getElementById("loadChart").getContext("2d");
     const ctx1 = document.getElementById("shearChart").getContext("2d");
     const ctx2 = document.getElementById("momentChart").getContext("2d");
 
+    if (loadChart) loadChart.destroy();
     if (shearChart) shearChart.destroy();
     if (momentChart) momentChart.destroy();
+
+    loadChart = new Chart(ctx3, {
+        type: "line",
+        data: {
+            labels: graphs.x,
+            datasets: [{
+                label: "Load (kN/m)",
+                data: graphs.load,
+                fill: false
+            }]
+        }
+    });
 
     shearChart = new Chart(ctx1, {
         type: "line",
