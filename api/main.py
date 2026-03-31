@@ -2,13 +2,17 @@ from fastapi import FastAPI
 import joblib
 import pandas as pd
 
-from nlp.prompt_parser import extract_parameters, apply_defaults
+from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall_load
 from rules.beam_design import bending_moment
 
 app = FastAPI()
 
 # Load trained model
 model = joblib.load("model.pkl")
+
+wall_load = 0
+total_load = load + wall_load
+# moment = bending_moment(total_load, span)
 
 
 @app.post("/predict")
@@ -34,11 +38,18 @@ def predict(data: dict):
         "fy": fy
     }])
 
+    if params.get("wall_height") and params.get("wall_thickness") and params.get("density"):
+    wall_load = calculate_wall_load(
+        params["density"],
+        params["wall_thickness"],
+        params["wall_height"]
+    )
+
     steel_area = model.predict(input_df)[0]
 
     # Engineering Calculation
-    moment = bending_moment(load, span)
-    x, shear, moment_curve, load_curve = generate_diagrams(load, span)
+    moment = bending_moment(total_load, span)
+    x, shear, moment_curve, load_curve = generate_diagrams(total_load, load, span)
 
     # return {
     #     "input": params,
@@ -57,7 +68,9 @@ def predict(data: dict):
         },
         "results": {
             "steel_area": round(float(steel_area), 2),
-            "bending_moment": round(moment, 2)
+            "bending_moment": round(moment, 2),
+            "wall_load": round(wall_load, 2),
+            "total_load": round(total_load, 2)
         },
         "graphs": {
             "x": x,
@@ -68,7 +81,7 @@ def predict(data: dict):
     }
 
 
-def generate_diagrams(load, span):
+def generate_diagrams(total_load, load, span):
     x_vals = []
     shear_vals = []
     moment_vals = []
@@ -88,3 +101,4 @@ def generate_diagrams(load, span):
         moment_vals.append(round(moment, 2))
 
     return x_vals, shear_vals, moment_vals, load_vals
+

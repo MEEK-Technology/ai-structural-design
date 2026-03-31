@@ -270,3 +270,15 @@ This allows users to better understand structural performance visually.
 </p>
 
 
+## 4.11 Load Representation and Wall Load Integration
+
+The system was enhanced to include graphical representation of applied loads and additional structural loading conditions.
+
+A load diagram was implemented to visualize the distribution of loads along the beam.
+
+Furthermore, wall load calculations were integrated using the formula:
+
+Wall Load = Density × Thickness × Height
+
+The system automatically computes wall load when parameters are provided and adds it to the beam load to determine the total load acting on the structure.
+
