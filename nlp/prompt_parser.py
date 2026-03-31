@@ -51,5 +51,9 @@ def apply_defaults(params):
 
 
 def normalize_concrete_strength(fcu):
-    fck = normalize_concrete_strength(params["fcu"])
+    # fck = normalize_concrete_strength(params["fcu"])
     return fcu  # For now same, but allows future conversion
+
+
+def calculate_wall_load(density, thickness, height):
+    return density * thickness * height
