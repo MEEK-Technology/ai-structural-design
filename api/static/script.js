@@ -49,23 +49,22 @@ function drawCharts(graphs) {
     if (momentChart) momentChart.destroy();
     if (loadChart) loadChart.destroy();
 
-    const options = {
+    const options = (titleText) => ({
         responsive: true,
         animation: {
             duration: 1500,
             easing: "easeOutQuart"
         },
+
         plugins: {
             legend: {
                 labels: { color: "white" }
             },
-        title: {
-            display: true,
-            text: "Bending Moment Diagram",
-            color: "white"
-        }
-        },
-        plugins: {
+            title: {
+                display: true,
+                text: titleText,
+                color: "white"
+            },
             tooltip: {
                 callbacks: {
                     label: function(context) {
@@ -84,7 +83,7 @@ function drawCharts(graphs) {
                 grid: { color: "rgba(255,255,255,0.1)" }
             }
         }
-    };
+    });
 
     shearChart = new Chart(ctx1, {
         type: "line",
@@ -99,7 +98,7 @@ function drawCharts(graphs) {
                 tension: 0.4
             }]
         },
-        options: options
+        options: options("Shear Force Diagram")
     });
 
     momentChart = new Chart(ctx2, {
@@ -113,13 +112,13 @@ function drawCharts(graphs) {
                 backgroundColor: "rgba(245,158,11,0.2)",
                 fill: true,
                 tension: 0.4,
-                pointRadius: function(ctx2) {
+                pointRadius: function(ctx) {
                     return ctx.dataIndex === peak.index ? 6 : 0;
                 },
                 pointBackgroundColor: "#ff0000"
             }]
         },
-        options: options
+        options: options("Bending Moment Diagram")
     });
 
     loadChart = new Chart(ctx3, {
@@ -135,7 +134,7 @@ function drawCharts(graphs) {
                 tension: 0
             }]
         },
-        options: options
+        options: options("Load Diagram")
     });
 }
 
