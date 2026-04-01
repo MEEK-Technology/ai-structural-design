@@ -114,7 +114,6 @@ function drawCharts(graphs) {
             }]
         }
     });
-}
 
     options: {
         plugins: {
@@ -123,26 +122,27 @@ function drawCharts(graphs) {
                     color: "white"   // ✅ legend text
                 }
             }
-        },
+        };
         scales: {
             x: {
                 ticks: {
                     color: "white"   // ✅ x-axis numbers
-                },
+                };
                 grid: {
                     color: "rgba(255,255,255,0.1)"
                 }
-            },
+            };
             y: {
                 ticks: {
                     color: "white"   // ✅ y-axis numbers
-                },
+                };
                 grid: {
                     color: "rgba(255,255,255,0.1)"
                 }
             }
         }
     }
+}
 
 async function downloadReport() {
     const prompt = document.getElementById("prompt").value;
