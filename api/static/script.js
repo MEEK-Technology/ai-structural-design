@@ -65,11 +65,6 @@ function drawCharts(graphs) {
         }
     };
 
-    const animation = {
-        duration: 1500,
-        easing: "easeOutQuart"
-    };
-
     shearChart = new Chart(ctx1, {
         type: "line",
         data: {
@@ -82,6 +77,10 @@ function drawCharts(graphs) {
                 fill: true,
                 tension: 0.4
             }]
+        },
+        animation: {
+            duration: 1500,
+            easing: "easeOutQuart"
         },
         options: options
     });
@@ -99,6 +98,10 @@ function drawCharts(graphs) {
                 tension: 0.4
             }]
         },
+        animation: {
+            duration: 1500,
+            easing: "easeOutQuart"
+        },
         options: options
     });
 
@@ -114,6 +117,10 @@ function drawCharts(graphs) {
                 fill: true,
                 tension: 0
             }]
+        },
+        animation: {
+            duration: 1500,
+            easing: "easeOutQuart"
         },
         options: options
     });
