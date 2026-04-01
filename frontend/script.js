@@ -18,8 +18,33 @@
 
 let shearChart, momentChart, loadChart;
 
+// async function generate() {
+//     const prompt = document.getElementById("prompt").value;
+
+//     const response = await fetch("http://127.0.0.1:8000/predict", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({ prompt: prompt })
+//     });
+
+//     const data = await response.json();
+
+//     document.getElementById("steel").innerText = data.results.steel_area;
+//     document.getElementById("moment").innerText = data.results.bending_moment;
+//     document.getElementById("wall").innerText = data.results.wall_load;
+//     document.getElementById("total").innerText = data.results.total_load;
+//     document.getElementById("reinf").innerText = data.reinforcement.recommended + " (As provided: " + data.reinforcement.provided_area + " mm²)";
+
+//     drawCharts(data.graphs);
+// }
+
 async function generate() {
     const prompt = document.getElementById("prompt").value;
+    const loader = document.getElementById("loader");
+
+    loader.style.display = "block";
 
     const response = await fetch("http://127.0.0.1:8000/predict", {
         method: "POST",
@@ -31,11 +56,16 @@ async function generate() {
 
     const data = await response.json();
 
-    document.getElementById("steel").innerText = data.results.steel_area;
-    document.getElementById("moment").innerText = data.results.bending_moment;
-    document.getElementById("wall").innerText = data.results.wall_load;
-    document.getElementById("total").innerText = data.results.total_load;
-    document.getElementById("reinf").innerText = data.reinforcement.recommended + " (As provided: " + data.reinforcement.provided_area + " mm²)";
+    loader.style.display = "none";
+
+    document.getElementById("steel").innerText = data.results.steel_area + " mm²";
+    document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
+    document.getElementById("wall").innerText = data.results.wall_load + " kN/m";
+    document.getElementById("total").innerText = data.results.total_load + " kN/m";
+
+    document.getElementById("reinf").innerText =
+        data.reinforcement.recommended +
+        " (As: " + data.reinforcement.provided_area + " mm²)";
 
     drawCharts(data.graphs);
 }
