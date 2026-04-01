@@ -32,7 +32,8 @@ async function generate() {
 
     } catch (error) {
         console.error("Error:", error);
-        alert("Something went wrong. Connect your internet to load graph");
+        alert("Something went wrong. Please try again!"); 
+        alert("Make sure you're connected to the internet to load graph.");
     }
 }
 
