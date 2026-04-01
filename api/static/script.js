@@ -32,7 +32,7 @@ async function generate() {
 
     } catch (error) {
         console.error("Error:", error);
-        alert("Something went wrong. Check console.");
+        alert("Something went wrong. Connect your internet to load graph");
     }
 }
 
@@ -141,24 +141,3 @@ async function checkHealth() {
 }
 
 checkHealth();
-
-datasets: [{
-    label: "Shear Force",
-    data: graphs.shear,
-    borderColor: "#3b82f6",  // bright blue
-    tension: 0.3
-}]
-
-datasets: [{
-    label: "Load",
-    data: graphs.shear,
-    borderColor: "#fa3c23",  // bright red
-    tension: 0.3
-}]
-
-datasets: [{
-    label: "Shear Force",
-    data: graphs.shear,
-    borderColor: "#f6603b",  // bright blue
-    tension: 0.3
-}]
