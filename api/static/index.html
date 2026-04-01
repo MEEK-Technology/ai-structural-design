@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>AI Beam Design System</title>
@@ -15,14 +15,79 @@
         <button onclick="generate()">Generate Design</button>
 
         <div class="output">
-            <h3>Results</h3>
-            <p><strong>Steel Area:</strong> <span id="steel"></span></p>
-            <p><strong>Bending Moment:</strong> <span id="moment"></span></p>
+            <h3>Design Results</h3>
+
+            <p><strong>Steel Area (AI):</strong> <span id="steel"></span> mm²</p>
+            <p><strong>Bending Moment:</strong> <span id="moment"></span> kNm</p>
+            <p><strong>Wall Load:</strong> <span id="wall"></span> kN/m</p>
+            <p><strong>Total Load:</strong> <span id="total"></span> kN/m</p>
             <p><strong>Reinforcement:</strong> <span id="reinf"></span></p>
+
+            <button onclick="downloadReport()">Download Report (PDF)</button>
+
             <canvas id="loadChart"></canvas>
             <canvas id="shearChart"></canvas>
             <canvas id="momentChart"></canvas>
         </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AI Beam Design System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <p style="text-align:right; opacity:0.6;">
+            System Status: <span id="status">Checking...</span>
+        </p>
+    
+        <h1>AI Structural Beam Design</h1>
+
+        <!-- INPUT CARD -->
+        <div class="card">
+            <textarea id="prompt" placeholder="Describe your beam design..."></textarea>
+            <button onclick="generate()">Generate Design</button>
+            <p class="loader" id="loader">Processing...</p>
+        </div>
+
+        <!-- OUTPUT GRID -->
+        <div class="grid">
+
+            <!-- RESULTS -->
+            <div class="card">
+                <h3>Results</h3>
+
+                <div class="result-item">Steel Area: <span id="steel"></span></div>
+                <div class="result-item">Moment: <span id="moment"></span></div>
+                <div class="result-item">Wall Load: <span id="wall"></span></div>
+                <div class="result-item">Total Load: <span id="total"></span></div>
+                <div class="result-item">Reinforcement: <span id="reinf"></span></div>
+
+                <button onclick="downloadReport()">Download PDF</button>
+            </div>
+
+            <!-- GRAPHS -->
+            <div class="card">
+                <h3>Graphs</h3>
+
+                <canvas id="loadChart"></canvas>
+                <canvas id="shearChart"></canvas>
+                <canvas id="momentChart"></canvas>
+            </div>
+
+        </div>
+
+        <p style="text-align:center; opacity:0.6;">
+            A Final Year Project by David, Nurudeen, Waliy, and Abbas | Supervisor: Dr. S. A. Olalusi | All rights reserved &copy; 2026
+        </p>
     </div>
 
     <script src="script.js"></script>

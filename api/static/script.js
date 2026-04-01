@@ -18,10 +18,35 @@
 
 let shearChart, momentChart, loadChart;
 
+// async function generate() {
+//     const prompt = document.getElementById("prompt").value;
+
+//     const response = await fetch("http://127.0.0.1:8000/predict", {
+//         method: "POST",
+//         headers: {
+//             "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({ prompt: prompt })
+//     });
+
+//     const data = await response.json();
+
+//     document.getElementById("steel").innerText = data.results.steel_area;
+//     document.getElementById("moment").innerText = data.results.bending_moment;
+//     document.getElementById("wall").innerText = data.results.wall_load;
+//     document.getElementById("total").innerText = data.results.total_load;
+//     document.getElementById("reinf").innerText = data.reinforcement.recommended + " (As provided: " + data.reinforcement.provided_area + " mm²)";
+
+//     drawCharts(data.graphs);
+// }
+
 async function generate() {
     const prompt = document.getElementById("prompt").value;
+    const loader = document.getElementById("loader");
 
-    const response = await fetch("/predict", {
+    loader.style.display = "block";
+
+    const response = await fetch("http://127.0.0.1:8000/predict", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -31,9 +56,16 @@ async function generate() {
 
     const data = await response.json();
 
-    document.getElementById("steel").innerText = data.results.steel_area;
-    document.getElementById("moment").innerText = data.results.bending_moment;
-    document.getElementById("reinf").innerText = data.reinforcement.recommended + " (As provided: " + data.reinforcement.provided_area + " mm²)";
+    loader.style.display = "none";
+
+    document.getElementById("steel").innerText = data.results.steel_area + " mm²";
+    document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
+    document.getElementById("wall").innerText = data.results.wall_load + " kN/m";
+    document.getElementById("total").innerText = data.results.total_load + " kN/m";
+
+    document.getElementById("reinf").innerText =
+        data.reinforcement.recommended +
+        " (As: " + data.reinforcement.provided_area + " mm²)";
 
     drawCharts(data.graphs);
 }
@@ -83,3 +115,31 @@ function drawCharts(graphs) {
         }
     });
 }
+
+async function downloadReport() {
+    const prompt = document.getElementById("prompt").value;
+
+    const response = await fetch("http://127.0.0.1:8000/download-report", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt: prompt })
+    });
+
+    const blob = await response.blob();
+
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = "beam_report.pdf";
+    link.click();
+}
+
+async function checkHealth() {
+    const res = await fetch("/health");
+    const data = await res.json();
+
+    document.getElementById("status").innerText = data.status.toUpperCase();
+}
+
+checkHealth();

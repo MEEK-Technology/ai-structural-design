@@ -46,6 +46,8 @@ def predict(data: dict):
         "fy": fy
     }])
 
+    wall_load = 0
+
     if params.get("wall_height") and params.get("wall_thickness") and params.get("density"):
         wall_load = calculate_wall_load(
             params["density"],
@@ -53,12 +55,12 @@ def predict(data: dict):
             params["wall_height"]
         )
 
+    # Engineering Calculations
+    total_load = load + wall_load
+
     steel_area = model.predict(input_df)[0]
     best_reinf, options = recommend_reinforcement(steel_area)
 
-    total_load = load + wall_load
-
-    # Engineering Calculation
     moment = bending_moment(total_load, span)
     x, shear, moment_curve, load_curve = generate_diagrams(total_load, span)
 
