@@ -37,6 +37,7 @@ async function generate() {
 }
 
 function drawCharts(graphs) {
+
     const ctx1 = document.getElementById("shearChart").getContext("2d");
     const ctx2 = document.getElementById("momentChart").getContext("2d");
     const ctx3 = document.getElementById("loadChart").getContext("2d");
@@ -45,16 +46,39 @@ function drawCharts(graphs) {
     if (momentChart) momentChart.destroy();
     if (loadChart) loadChart.destroy();
 
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                labels: { color: "white" }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: "white" },
+                grid: { color: "rgba(255,255,255,0.1)" }
+            },
+            y: {
+                ticks: { color: "white" },
+                grid: { color: "rgba(255,255,255,0.1)" }
+            }
+        }
+    };
+
     shearChart = new Chart(ctx1, {
         type: "line",
         data: {
             labels: graphs.x,
             datasets: [{
-                label: "Shear Force",
+                label: "Shear Force (kN)",
                 data: graphs.shear,
-                fill: false
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59,130,246,0.2)",
+                fill: true,
+                tension: 0.4
             }]
-        }
+        },
+        options: options
     });
 
     momentChart = new Chart(ctx2, {
@@ -62,11 +86,15 @@ function drawCharts(graphs) {
         data: {
             labels: graphs.x,
             datasets: [{
-                label: "Bending Moment",
+                label: "Bending Moment (kNm)",
                 data: graphs.moment,
-                fill: false
+                borderColor: "#f59e0b",
+                backgroundColor: "rgba(245,158,11,0.2)",
+                fill: true,
+                tension: 0.4
             }]
-        }
+        },
+        options: options
     });
 
     loadChart = new Chart(ctx3, {
@@ -76,38 +104,14 @@ function drawCharts(graphs) {
             datasets: [{
                 label: "Load (kN/m)",
                 data: graphs.load,
-                fill: false
+                borderColor: "#10b981",
+                backgroundColor: "rgba(16,185,129,0.2)",
+                fill: true,
+                tension: 0
             }]
-        }
+        },
+        options: options
     });
-
-    options: {
-        plugins: {
-            legend: {
-                labels: {
-                    color: "white"   // legend text
-                }
-            }
-        };
-        scales: {
-            x: {
-                ticks: {
-                    color: "white"   // x-axis numbers
-                };
-                grid: {
-                    color: "rgba(255,255,255,0.1)"
-                }
-            };
-            y: {
-                ticks: {
-                    color: "white"   // y-axis numbers
-                };
-                grid: {
-                    color: "rgba(255,255,255,0.1)"
-                }
-            }
-        }
-    }
 }
 
 async function downloadReport() {
