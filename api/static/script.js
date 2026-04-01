@@ -65,6 +65,11 @@ function drawCharts(graphs) {
         }
     };
 
+    const animation = {
+        duration: 1500,
+        easing: "easeOutQuart"
+    };
+
     shearChart = new Chart(ctx1, {
         type: "line",
         data: {
