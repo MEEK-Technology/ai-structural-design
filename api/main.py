@@ -127,3 +127,5 @@ def download_report(data: dict):
     file_path = generate_pdf(result)
 
     return FileResponse(file_path, filename="beam_report.pdf", media_type='application/pdf')
+
+

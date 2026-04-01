@@ -85,3 +85,23 @@ function drawCharts(graphs) {
         }
     });
 }
+
+async function downloadReport() {
+    const prompt = document.getElementById("prompt").value;
+
+    const response = await fetch("http://127.0.0.1:8000/download-report", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt: prompt })
+    });
+
+    const blob = await response.blob();
+
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = "beam_report.pdf";
+    link.click();
+}
+
