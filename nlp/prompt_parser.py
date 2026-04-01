@@ -50,7 +50,7 @@ def apply_defaults(params):
         "fy": params["fy"] if params["fy"] else 460,
         "wall_height": params["wall_height"] if params["wall_height"] else 0,
         "wall_thickness": params["wall_thickness"] if params["wall_thickness"] else 0,
-        "density": params["density"] if params["density"] else 24
+        "density": params["density"] if params["density"] else 2.87,  # Default density for concrete in kN/m²
     }
 
 
