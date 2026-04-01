@@ -38,6 +38,8 @@ async function generate() {
 
 function drawCharts(graphs) {
 
+    const peak = getMaxPoint(graphs.moment);
+
     const ctx1 = document.getElementById("shearChart").getContext("2d");
     const ctx2 = document.getElementById("momentChart").getContext("2d");
     const ctx3 = document.getElementById("loadChart").getContext("2d");
@@ -55,6 +57,20 @@ function drawCharts(graphs) {
         plugins: {
             legend: {
                 labels: { color: "white" }
+            },
+        title: {
+            display: true,
+            text: "Bending Moment Diagram",
+            color: "white"
+        }
+        },
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.dataset.label + ": " + context.raw.toFixed(2);
+                    }
+                }
             }
         },
         scales: {
@@ -95,7 +111,11 @@ function drawCharts(graphs) {
                 borderColor: "#f59e0b",
                 backgroundColor: "rgba(245,158,11,0.2)",
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                pointRadius: function(ctx2) {
+                    return ctx.dataIndex === peak.index ? 6 : 0;
+                },
+                pointBackgroundColor: "#ff0000"
             }]
         },
         options: options
@@ -122,23 +142,6 @@ function getMaxPoint(data) {
     let max = Math.max(...data);
     let index = data.indexOf(max);
     return { max, index };
-}
-
-const peak = getMaxPoint(graphs.moment);
-
-pointRadius: function(ctx) {
-    return ctx.dataIndex === peak.index ? 6 : 0;
-},
-pointBackgroundColor: "#ff0000"
-
-plugins: {
-    tooltip: {
-        callbacks: {
-            label: function(context) {
-                return context.dataset.label + ": " + context.raw.toFixed(2);
-            }
-        }
-    }
 }
 
 async function downloadReport() {
