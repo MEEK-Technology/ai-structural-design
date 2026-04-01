@@ -135,3 +135,11 @@ async function downloadReport() {
     link.click();
 }
 
+async function checkHealth() {
+    const res = await fetch("/health");
+    const data = await res.json();
+
+    document.getElementById("status").innerText = data.status.toUpperCase();
+}
+
+checkHealth();

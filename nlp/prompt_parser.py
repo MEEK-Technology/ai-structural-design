@@ -1,7 +1,7 @@
 from marshal import load
 import re
 
-# from fastapi import params
+from fastapi import params
 
 def extract_parameters(text):
     # Span (e.g., 6m or span 6m)
@@ -52,8 +52,6 @@ def apply_defaults(params):
         "wall_thickness": params["wall_thickness"],
         "density": params["density"] if params["density"] else 24
     }
-
-`
 
 
 def normalize_concrete_strength(fcu):

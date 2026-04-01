@@ -9,17 +9,17 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from api.report import generate_pdf
 
-# manual_As = calc_steel_area(moment)
+app = FastAPI()
 
 app.mount("/", StaticFiles(directory="api/static", html=True), name="static")
 
-app = FastAPI()
+# manual_As = calc_steel_area(moment)
 
 # Load trained model
 model = joblib.load("model.pkl")
 
-wall_load = 0
-total_load = load + wall_load
+# wall_load = 0
+# total_load = load + wall_load
 # moment = bending_moment(total_load, span)
 
 
@@ -56,9 +56,11 @@ def predict(data: dict):
     steel_area = model.predict(input_df)[0]
     best_reinf, options = recommend_reinforcement(steel_area)
 
+    total_load = load + wall_load
+
     # Engineering Calculation
     moment = bending_moment(total_load, span)
-    x, shear, moment_curve, load_curve = generate_diagrams(total_load, load, span)
+    x, shear, moment_curve, load_curve = generate_diagrams(total_load, span)
 
     return {
         "input": params,
@@ -85,9 +87,9 @@ def predict(data: dict):
         "graphs": {
             "x": x,
             "shear": shear,
-            "moment": moment_curve
+            "moment": moment_curve,
             "load": load_curve
-        }
+        },
         "reinforcement": {
             "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
             "provided_area": best_reinf["provided_area"],
@@ -96,12 +98,10 @@ def predict(data: dict):
     }
 
 
-def generate_diagrams(total_load, load, span):
+def generate_diagrams(load, span):
     x_vals = []
     shear_vals = []
     moment_vals = []
-    load_vals = [load for _ in x_vals]
-
     steps = 20
     dx = span / steps
 
@@ -114,6 +114,8 @@ def generate_diagrams(total_load, load, span):
         x_vals.append(round(x, 2))
         shear_vals.append(round(shear, 2))
         moment_vals.append(round(moment, 2))
+
+    load_vals = [load for _ in x_vals]
 
     return x_vals, shear_vals, moment_vals, load_vals
 
@@ -129,3 +131,41 @@ def download_report(data: dict):
     return FileResponse(file_path, filename="beam_report.pdf", media_type='application/pdf')
 
 
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "message": "AI Structural Design System is running..."
+    }
+
+
+@app.get("/info")
+def system_info():
+    return {
+        "project": "AI Structural Beam Design System",
+        "developer": "MEEK Technology",
+        "features": [
+            "AI prediction",
+            "Prompt-based input",
+            "Graph visualization",
+            "Wall load calculation",
+            "Reinforcement design",
+            "PDF report generation"
+        ]
+    }
+
+
+@app.get("/version")
+def version():
+    return {
+        "version": "1.0.0",
+        "release": "Final Year Project",
+        "year": 2026
+    }
+
+
+@app.get("/example")
+def example_input():
+    return {
+        "prompt": "Design a beam with span 6m, load 25kN/m, concrete grade 30 and steel grade 500"
+    }
