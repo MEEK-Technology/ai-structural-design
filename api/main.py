@@ -59,7 +59,7 @@ def predict(data: dict):
 
     return {
         "input": params,
-        
+
         "results": {
             # "steel_area_manual": round(manual_As, 2), # Comparison of AI with manual calculation
             "steel_area": round(float(steel_area), 2),
