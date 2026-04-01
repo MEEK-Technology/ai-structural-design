@@ -48,6 +48,10 @@ function drawCharts(graphs) {
 
     const options = {
         responsive: true,
+        animation: {
+            duration: 1500,
+            easing: "easeOutQuart"
+        },
         plugins: {
             legend: {
                 labels: { color: "white" }
@@ -78,10 +82,6 @@ function drawCharts(graphs) {
                 tension: 0.4
             }]
         },
-        animation: {
-            duration: 1500,
-            easing: "easeOutQuart"
-        },
         options: options
     });
 
@@ -97,10 +97,6 @@ function drawCharts(graphs) {
                 fill: true,
                 tension: 0.4
             }]
-        },
-        animation: {
-            duration: 1500,
-            easing: "easeOutQuart"
         },
         options: options
     });
@@ -118,10 +114,6 @@ function drawCharts(graphs) {
                 tension: 0
             }]
         },
-        animation: {
-            duration: 1500,
-            easing: "easeOutQuart"
-        },
         options: options
     });
 }
@@ -130,6 +122,23 @@ function getMaxPoint(data) {
     let max = Math.max(...data);
     let index = data.indexOf(max);
     return { max, index };
+}
+
+const peak = getMaxPoint(graphs.moment);
+
+pointRadius: function(ctx) {
+    return ctx.dataIndex === peak.index ? 6 : 0;
+},
+pointBackgroundColor: "#ff0000"
+
+plugins: {
+    tooltip: {
+        callbacks: {
+            label: function(context) {
+                return context.dataset.label + ": " + context.raw.toFixed(2);
+            }
+        }
+    }
 }
 
 async function downloadReport() {
