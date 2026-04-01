@@ -7,7 +7,7 @@ def generate_pdf(data, filename="beam_report.pdf"):
 
     content = []
 
-    content.append(Paragraph("AI Beam Design Report", styles["Title"]))
+    content.append(Paragraph("AI Structural Beam Design", styles["Title"]))
     content.append(Spacer(1, 10))
 
     content.append(Paragraph(f"Span: {data['input']['span']} m", styles["Normal"]))
