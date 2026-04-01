@@ -11,17 +11,10 @@ from api.report import generate_pdf
 
 app = FastAPI()
 
-app.mount("/", StaticFiles(directory="api/static", html=True), name="static")
-
 # manual_As = calc_steel_area(moment)
 
 # Load trained model
 model = joblib.load("model.pkl")
-
-# wall_load = 0
-# total_load = load + wall_load
-# moment = bending_moment(total_load, span)
-
 
 @app.post("/predict")
 def predict(data: dict):
@@ -66,19 +59,7 @@ def predict(data: dict):
 
     return {
         "input": params,
-    #     "results": {
-    #         "steel_area": round(float(steel_area), 2),
-    #         "bending_moment": round(moment, 2)
-    #     }
-    # }
-
-    # return {
-    #     "input": {
-    #         "span": span,
-    #         "load": load,
-    #         "fcu": fcu,
-    #         "fy": fy
-    #     },
+        
         "results": {
             # "steel_area_manual": round(manual_As, 2), # Comparison of AI with manual calculation
             "steel_area": round(float(steel_area), 2),
@@ -171,3 +152,5 @@ def example_input():
     return {
         "prompt": "Design a beam with span 6m, load 25kN/m, concrete grade 30 and steel grade 500"
     }
+
+app.mount("/", StaticFiles(directory="api/static", html=True), name="static")

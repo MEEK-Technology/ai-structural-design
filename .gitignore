@@ -22,3 +22,4 @@ build/
 *.txt
 *.csv
 *.pkl
+*.pdf

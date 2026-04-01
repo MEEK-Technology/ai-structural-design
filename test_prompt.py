@@ -16,6 +16,7 @@ prompt = "Design a beam with span 17m and load 40kN/m with concrete grade 35 and
 # prompt = "Design a beam with span 17m and load 40kN/m with grade of concrete 55 and grade of steel 580"
 
 
+
 params = extract_parameters(prompt)
 params = apply_defaults(params)
 
