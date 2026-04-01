@@ -1,73 +1,39 @@
-// async function generate() {
-//     const prompt = document.getElementById("prompt").value;
-
-//     const response = await fetch("http://127.0.0.1:8000/predict", {        
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json"
-//         },
-//         body: JSON.stringify({ prompt: prompt })
-//     });
-
-//     const data = await response.json();
-
-//     document.getElementById("steel").innerText = data.results.steel_area;
-//     document.getElementById("moment").innerText = data.results.bending_moment;
-// }
-
-
 let shearChart, momentChart, loadChart;
 
-// async function generate() {
-//     const prompt = document.getElementById("prompt").value;
-
-//     const response = await fetch("http://127.0.0.1:8000/predict", {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json"
-//         },
-//         body: JSON.stringify({ prompt: prompt })
-//     });
-
-//     const data = await response.json();
-
-//     document.getElementById("steel").innerText = data.results.steel_area;
-//     document.getElementById("moment").innerText = data.results.bending_moment;
-//     document.getElementById("wall").innerText = data.results.wall_load;
-//     document.getElementById("total").innerText = data.results.total_load;
-//     document.getElementById("reinf").innerText = data.reinforcement.recommended + " (As provided: " + data.reinforcement.provided_area + " mm²)";
-
-//     drawCharts(data.graphs);
-// }
-
 async function generate() {
-    const prompt = document.getElementById("prompt").value;
-    const loader = document.getElementById("loader");
+    try {
+        const prompt = document.getElementById("prompt").value;
+        const loader = document.getElementById("loader");
 
-    loader.style.display = "block";
+        loader.style.display = "block";
 
-    const response = await fetch("http://127.0.0.1:8000/predict", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ prompt: prompt })
-    });
+        const response = await fetch("/predict", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ prompt: prompt })
+        });
 
-    const data = await response.json();
+        const data = await response.json();
 
-    loader.style.display = "none";
+        loader.style.display = "none";
 
-    document.getElementById("steel").innerText = data.results.steel_area + " mm²";
-    document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
-    document.getElementById("wall").innerText = data.results.wall_load + " kN/m";
-    document.getElementById("total").innerText = data.results.total_load + " kN/m";
+        document.getElementById("steel").innerText = data.results.steel_area + " mm²";
+        document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
+        document.getElementById("wall").innerText = data.results.wall_load + " kN/m";
+        document.getElementById("total").innerText = data.results.total_load + " kN/m";
 
-    document.getElementById("reinf").innerText =
-        data.reinforcement.recommended +
-        " (As: " + data.reinforcement.provided_area + " mm²)";
+        document.getElementById("reinf").innerText =
+            data.reinforcement.recommended +
+            " (As: " + data.reinforcement.provided_area + " mm²)";
 
-    drawCharts(data.graphs);
+        drawCharts(data.graphs);
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Something went wrong. Check console.");
+    }
 }
 
 function drawCharts(graphs) {
@@ -119,14 +85,14 @@ function drawCharts(graphs) {
         plugins: {
             legend: {
                 labels: {
-                    color: "white"   // ✅ legend text
+                    color: "white"   // legend text
                 }
             }
         };
         scales: {
             x: {
                 ticks: {
-                    color: "white"   // ✅ x-axis numbers
+                    color: "white"   // x-axis numbers
                 };
                 grid: {
                     color: "rgba(255,255,255,0.1)"
@@ -134,7 +100,7 @@ function drawCharts(graphs) {
             };
             y: {
                 ticks: {
-                    color: "white"   // ✅ y-axis numbers
+                    color: "white"   // y-axis numbers
                 };
                 grid: {
                     color: "rgba(255,255,255,0.1)"
@@ -147,7 +113,7 @@ function drawCharts(graphs) {
 async function downloadReport() {
     const prompt = document.getElementById("prompt").value;
 
-    const response = await fetch("http://127.0.0.1:8000/download-report", {
+    const response = await fetch("/download-report", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -171,3 +137,24 @@ async function checkHealth() {
 }
 
 checkHealth();
+
+datasets: [{
+    label: "Shear Force",
+    data: graphs.shear,
+    borderColor: "#3b82f6",  // bright blue
+    tension: 0.3
+}]
+
+datasets: [{
+    label: "Load",
+    data: graphs.shear,
+    borderColor: "#fa3c23",  // bright red
+    tension: 0.3
+}]
+
+datasets: [{
+    label: "Shear Force",
+    data: graphs.shear,
+    borderColor: "#f6603b",  // bright blue
+    tension: 0.3
+}]
