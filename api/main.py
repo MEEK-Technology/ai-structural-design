@@ -6,6 +6,8 @@ from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall
 from rules.beam_design import bending_moment, recommend_reinforcement
 # from rules.beam_design import steel_area as calc_steel_area
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from api.report import generate_pdf
 
 # manual_As = calc_steel_area(moment)
 
@@ -115,3 +117,13 @@ def generate_diagrams(total_load, load, span):
 
     return x_vals, shear_vals, moment_vals, load_vals
 
+
+@app.post("/download-report")
+def download_report(data: dict):
+
+    # reuse prediction logic
+    result = predict(data)
+
+    file_path = generate_pdf(result)
+
+    return FileResponse(file_path, filename="beam_report.pdf", media_type='application/pdf')
