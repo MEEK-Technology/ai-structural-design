@@ -111,7 +111,7 @@ def download_report(data: dict):
 
     file_path = generate_pdf(result)
 
-    return FileResponse(file_path, filename="ai_beam_report.pdf", media_type='application/pdf')
+    return FileResponse(file_path, filename="aibeam_report.pdf", media_type='application/pdf')
 
 
 @app.get("/health")
