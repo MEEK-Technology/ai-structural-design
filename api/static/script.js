@@ -126,6 +126,12 @@ function drawCharts(graphs) {
     });
 }
 
+function getMaxPoint(data) {
+    let max = Math.max(...data);
+    let index = data.indexOf(max);
+    return { max, index };
+}
+
 async function downloadReport() {
     const prompt = document.getElementById("prompt").value;
 
@@ -141,7 +147,7 @@ async function downloadReport() {
 
     const link = document.createElement("a");
     link.href = window.URL.createObjectURL(blob);
-    link.download = "beam_report.pdf";
+    link.download = "ai_beam_report.pdf";
     link.click();
 }
 
