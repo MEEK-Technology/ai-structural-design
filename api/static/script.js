@@ -21,7 +21,7 @@ let shearChart, momentChart, loadChart;
 async function generate() {
     const prompt = document.getElementById("prompt").value;
 
-    const response = await fetch("http://127.0.0.1:8000/predict", {
+    const response = await fetch("/predict", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -33,8 +33,6 @@ async function generate() {
 
     document.getElementById("steel").innerText = data.results.steel_area;
     document.getElementById("moment").innerText = data.results.bending_moment;
-    document.getElementById("wall").innerText = data.results.wall_load;
-    document.getElementById("total").innerText = data.results.total_load;
     document.getElementById("reinf").innerText = data.reinforcement.recommended + " (As provided: " + data.reinforcement.provided_area + " mm²)";
 
     drawCharts(data.graphs);

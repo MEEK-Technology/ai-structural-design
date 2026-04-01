@@ -4,9 +4,12 @@ import pandas as pd
 
 from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall_load
 from rules.beam_design import bending_moment, recommend_reinforcement
-from rules.beam_design import steel_area as calc_steel_area
+# from rules.beam_design import steel_area as calc_steel_area
+from fastapi.staticfiles import StaticFiles
 
-manual_As = calc_steel_area(moment)
+# manual_As = calc_steel_area(moment)
+
+app.mount("/", StaticFiles(directory="api/static", html=True), name="static")
 
 app = FastAPI()
 
@@ -71,7 +74,7 @@ def predict(data: dict):
     #         "fy": fy
     #     },
         "results": {
-            "steel_area_manual": round(manual_As, 2), #if needed # Comparison of AI with manual calculation
+            # "steel_area_manual": round(manual_As, 2), # Comparison of AI with manual calculation
             "steel_area": round(float(steel_area), 2),
             "bending_moment": round(moment, 2),
             "wall_load": round(wall_load, 2),
