@@ -45,7 +45,7 @@ async function generate() {
     const loader = document.getElementById("loader");
 
     console.log("Sending prompt:", prompt); // DEBUG
-    
+
     loader.style.display = "block";
 
     const response = await fetch("http://127.0.0.1:8000/predict", {
@@ -57,6 +57,8 @@ async function generate() {
     });
 
     const data = await response.json();
+
+    console.log("Response:", data); // DEBUG
 
     loader.style.display = "none";
 
