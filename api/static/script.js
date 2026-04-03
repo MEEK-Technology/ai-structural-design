@@ -7,6 +7,8 @@ async function generate() {
 
         loader.style.display = "block";
 
+        console.log("Sending prompt:", prompt); // DEBUG
+
         const response = await fetch("/predict", {
             method: "POST",
             headers: {
