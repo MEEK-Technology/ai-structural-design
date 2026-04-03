@@ -69,3 +69,13 @@ def recommend_reinforcement(As_required):
 
     return best, solutions
 
+
+def estimate_beam_size(span):
+    d = (span * 1000) / 20   # convert m → mm
+    h = d + 50               # add cover
+    b = 0.5 * h
+
+    return {
+        "width": round(b),
+        "depth": round(h)
+    }
