@@ -28,25 +28,26 @@
 
             <div class="flex">
 
-            <!-- RESULTS -->
-            <div class="card">
-                <h3>Results</h3>
+                <!-- RESULTS -->
+                <div class="card">
+                    <h3>Results</h3>
 
-                <div class="result-item">Steel Area: <span id="steel"></span></div>
-                <div class="result-item">Moment: <span id="moment"></span></div>
-                <div class="result-item">Wall Load: <span id="wall"></span></div>
-                <div class="result-item">Total Load: <span id="total"></span></div>
-                <div class="result-item">Reinforcement: <span id="reinf"></span></div>
+                    <div class="result-item">Steel Area: <span id="steel"></span></div>
+                    <div class="result-item">Moment: <span id="moment"></span></div>
+                    <div class="result-item">Wall Load: <span id="wall"></span></div>
+                    <div class="result-item">Total Load: <span id="total"></span></div>
+                    <div class="result-item">Reinforcement: <span id="reinf"></span></div>
 
-                <button onclick="downloadReport()">Download PDF</button>
-            </div>
+                    <button onclick="downloadReport()">Download PDF</button>
+                </div>
+                
+                <!-- BEAM UI -->
+                <div class="card">
+                    <h3>Beam Diagram</h3>
+                    <canvas id="beamCanvas" width="500" height="200"></canvas>
+                    <i>This beam design wasn't part of the aggreement, i just designed it for demonstration purpose only.</i>
+                </div>
 
-            <!-- BEAM UI -->
-            <div class="card">
-                <h3>Beam Diagram</h3>
-                <! --  width="600" height="200" -->
-                <canvas id="beamCanvas" width="" height=""></canvas>
-            </div>
             </div>
 
             <!-- GRAPHS -->

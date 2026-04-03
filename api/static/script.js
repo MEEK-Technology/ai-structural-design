@@ -188,7 +188,7 @@ function drawBeamDiagram(span, load) {                 // Beam UI Diagram
     ctx.lineTo(endX, beamY);
     ctx.fill();
 
-    // 🔹 Draw Load Arrows
+    // Draw Load Arrows
     ctx.strokeStyle = "#10b981";
     ctx.lineWidth = 2;
 
@@ -217,6 +217,9 @@ function drawBeamDiagram(span, load) {                 // Beam UI Diagram
 
     ctx.fillText(`Span: ${span} m`, canvas.width / 2 - 40, beamY + 40);
     ctx.fillText(`Load: ${load} kN/m`, canvas.width / 2 - 50, beamY - 50);
+    // if (data.results.wall_load > 0) {
+    //     ctx.fillText("Wall Load Included", canvas.width / 2 - 60, 20);
+    // }
 }
 
 async function downloadReport() {

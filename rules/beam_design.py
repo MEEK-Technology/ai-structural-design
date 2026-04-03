@@ -68,3 +68,4 @@ def recommend_reinforcement(As_required):
     best = min(solutions, key=lambda x: x["provided_area"])
 
     return best, solutions
+
