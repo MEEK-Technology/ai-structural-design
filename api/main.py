@@ -109,6 +109,21 @@ def generate_diagrams(load, span):
     return x_vals, shear_vals, moment_vals, load_vals
 
 
+def check_deflection(span, depth, support_type="simply_supported"):
+    limits = {
+        "simply_supported": 20,
+        "cantilever": 7,
+        "continuous": 26
+    }
+
+    allowable = span * 1000 / limits[support_type]
+
+    if depth >= allowable:
+        return "SAFE"
+    else:
+        return "NOT SAFE"
+    
+    
 @app.post("/download-report")
 def download_report(data: dict):
 
