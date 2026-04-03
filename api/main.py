@@ -56,6 +56,8 @@ def predict(data: dict):
 
     beam_size = estimate_beam_size(span)
 
+    deflection_status = check_deflection(span, beam_size["depth"])
+
     moment = bending_moment(total_load, span)
     x, shear, moment_curve, load_curve = generate_diagrams(total_load, span)
 
