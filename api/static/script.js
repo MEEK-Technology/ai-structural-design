@@ -32,7 +32,8 @@ async function generate() {
             data.reinforcement.recommended +
             " (As: " + data.reinforcement.provided_area + " mm²)";
 
-        drawCharts(data.graphs);
+        drawCharts(data.graphs);  // Graphs calling
+        drawBeamDiagram(data.input.span, data.input.load);  //  Beam UI calling
 
     } catch (error) {
         console.error("Error:", error);   // ERROR DEBUG CATCHER
