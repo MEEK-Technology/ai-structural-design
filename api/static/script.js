@@ -21,6 +21,8 @@ async function generate() {
 
         loader.style.display = "none";
 
+        console.log("Response:", data); // DEBUG
+
         document.getElementById("steel").innerText = data.results.steel_area + " mm²";
         document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
         document.getElementById("wall").innerText = data.results.wall_load + " kN/m";
