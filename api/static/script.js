@@ -150,6 +150,74 @@ function getMaxPoint(data) {
     return { max, index };
 }
 
+function drawBeamDiagram(span, load) {                 // Beam UI Diagram
+    const canvas = document.getElementById("beamCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const margin = 50;
+    const beamY = 100;
+    const startX = margin;
+    const endX = canvas.width - margin;
+
+    // Draw Beam Line
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(startX, beamY);
+    ctx.lineTo(endX, beamY);
+    ctx.stroke();
+
+    // Draw Supports
+    ctx.fillStyle = "white";
+
+    // Left support
+    ctx.beginPath();
+    ctx.moveTo(startX - 10, beamY + 20);
+    ctx.lineTo(startX + 10, beamY + 20);
+    ctx.lineTo(startX, beamY);
+    ctx.fill();
+
+    // Right support
+    ctx.beginPath();
+    ctx.moveTo(endX - 10, beamY + 20);
+    ctx.lineTo(endX + 10, beamY + 20);
+    ctx.lineTo(endX, beamY);
+    ctx.fill();
+
+    // 🔹 Draw Load Arrows
+    ctx.strokeStyle = "#10b981";
+    ctx.lineWidth = 2;
+
+    const arrows = 10;
+    const spacing = (endX - startX) / arrows;
+
+    for (let i = 0; i <= arrows; i++) {
+        let x = startX + i * spacing;
+
+        ctx.beginPath();
+        ctx.moveTo(x, beamY - 30);
+        ctx.lineTo(x, beamY);
+        ctx.stroke();
+
+        // Arrow head
+        ctx.beginPath();
+        ctx.moveTo(x - 5, beamY - 10);
+        ctx.lineTo(x, beamY);
+        ctx.lineTo(x + 5, beamY - 10);
+        ctx.stroke();
+    }
+
+    // Labels
+    ctx.fillStyle = "white";
+    ctx.font = "14px Arial";
+
+    ctx.fillText(`Span: ${span} m`, canvas.width / 2 - 40, beamY + 40);
+    ctx.fillText(`Load: ${load} kN/m`, canvas.width / 2 - 50, beamY - 50);
+}
+
 async function downloadReport() {
     const prompt = document.getElementById("prompt").value;
 
