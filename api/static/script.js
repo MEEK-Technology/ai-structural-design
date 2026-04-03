@@ -33,7 +33,7 @@ async function generate() {
             " (As: " + data.reinforcement.provided_area + " mm²)";
 
         document.getElementById("beam").innerText =
-            data.beam.width + "mm x " + data.beam.depth + "mm";
+            data.beam.width + "mm width x " + data.beam.depth + "mm depth";
 
         document.getElementById("deflection").innerText = data.deflection;
 
