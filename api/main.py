@@ -58,11 +58,19 @@ def predict(data: dict):
 
     deflection_status = check_deflection(span, beam_size["depth"])
 
+    support = params.get("support", "simply_supported")
+    deflection_status = check_deflection(span, beam_size["depth"], support)
+
     moment = bending_moment(total_load, span)
     x, shear, moment_curve, load_curve = generate_diagrams(total_load, span)
 
     return {
         "input": params,
+
+        "beam": {
+            "width": beam_size["width"],
+            "depth": beam_size["depth"]
+        },
 
         "results": {
             # "steel_area_manual": round(manual_As, 2), # Comparison of AI with manual calculation
@@ -70,22 +78,21 @@ def predict(data: dict):
             "bending_moment": round(moment, 2),
             "wall_load": round(wall_load, 2),
             "total_load": round(total_load, 2),
-            "beam": {
-                "width": beam_size["width"],
-                "depth": beam_size["depth"]
-            },
-            "deflection": deflection_status
         },
+
+        "deflection": deflection_status,
+
+        "reinforcement": {
+            "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
+            "provided_area": best_reinf["provided_area"],
+            "all_options": options
+        },
+        
         "graphs": {
             "x": x,
             "shear": shear,
             "moment": moment_curve,
             "load": load_curve
-        },
-        "reinforcement": {
-            "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
-            "provided_area": best_reinf["provided_area"],
-            "all_options": options
         }
     }
 
