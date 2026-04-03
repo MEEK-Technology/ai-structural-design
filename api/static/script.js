@@ -21,7 +21,7 @@ async function generate() {
 
         loader.style.display = "none";
 
-        console.log("Response:", data); // DEBUG
+        console.log("Response:", data); console.log("Response:", data); // DEBUG
 
         document.getElementById("steel").innerText = data.results.steel_area + " mm²";
         document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
@@ -35,7 +35,7 @@ async function generate() {
         drawCharts(data.graphs);
 
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error:", error);   // ERROR DEBUG CATCHER
         alert("Something went wrong. Check your console.. and try again!"); 
         alert("Make sure you're connected to the internet to load graph.");
     }
