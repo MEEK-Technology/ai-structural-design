@@ -36,7 +36,7 @@ async function generate() {
 
     } catch (error) {
         console.error("Error:", error);
-        alert("Something went wrong. Please try again!"); 
+        alert("Something went wrong. Check your console.. and try again!"); 
         alert("Make sure you're connected to the internet to load graph.");
     }
 }
