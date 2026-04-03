@@ -73,7 +73,8 @@ def predict(data: dict):
             "beam": {
                 "width": beam_size["width"],
                 "depth": beam_size["depth"]
-            }
+            },
+            "deflection": deflection_status
         },
         "graphs": {
             "x": x,
