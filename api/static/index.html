@@ -26,6 +26,8 @@
         <!-- OUTPUT GRID -->
         <div class="grid">
 
+            <div class="flex">
+
             <!-- RESULTS -->
             <div class="card">
                 <h3>Results</h3>
@@ -39,6 +41,14 @@
                 <button onclick="downloadReport()">Download PDF</button>
             </div>
 
+            <!-- BEAM UI -->
+            <div class="card">
+                <h3>Beam Diagram</h3>
+                <! --  width="600" height="200" -->
+                <canvas id="beamCanvas" width="" height=""></canvas>
+            </div>
+            </div>
+
             <!-- GRAPHS -->
             <div class="card">
                 <h3>Graphs</h3>
@@ -49,12 +59,7 @@
             </div>
 
         </div>
-        
-        <!-- BEAM UI -->
-        <div class="card">
-            <h3>Beam Diagram</h3>
-            <canvas id="beamCanvas" width="600" height="200"></canvas>
-        </div>
+
 
         <p style="text-align:center; opacity:0.6;">
             A Final Year Project by David, Nurudeen, Waliy, & Abbas | Supervisor: Dr. H. I. Adebakin | All rights reserved &copy; 2026
