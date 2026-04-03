@@ -99,7 +99,8 @@ function drawCharts(graphs) {
                 borderColor: "#3b82f6",
                 backgroundColor: "rgba(59,130,246,0.2)",
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                pointRadius: 0
             }]
         },
         options: options("Shear Force Diagram")
@@ -135,7 +136,8 @@ function drawCharts(graphs) {
                 borderColor: "#10b981",
                 backgroundColor: "rgba(16,185,129,0.2)",
                 fill: true,
-                tension: 0
+                tension: 0,
+                pointRadius: 0    
             }]
         },
         options: options("Load Diagram")
