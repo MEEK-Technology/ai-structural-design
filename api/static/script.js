@@ -32,6 +32,9 @@ async function generate() {
             data.reinforcement.recommended +
             " (As: " + data.reinforcement.provided_area + " mm²)";
 
+        document.getElementById("beam").innerText =
+            data.beam.width + "mm x " + data.beam.depth + "mm";
+
         drawCharts(data.graphs);  // Graphs calling
         drawBeamDiagram(data.input.span, data.input.load);  //  Beam UI calling
 
