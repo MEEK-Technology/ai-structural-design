@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +8,14 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
     <div class="container">
         <p style="text-align:right; opacity:0.6;">
             System Status: <span id="status"><i>Checking...</i></span>
         </p>
-    
+
         <h1>AI Structural Design System</h1>
 
         <!-- INPUT CARD -->
@@ -42,14 +44,17 @@
 
                     <div class="result-item"><strong>Deflection Check:</strong> <span id="deflection"></span></div>
 
+                    <div class="result-item"><strong>Support Type:</strong> <span id="support"></span></div>
+
                     <button onclick="downloadReport()">Download PDF</button>
                 </div>
-                
+
                 <!-- BEAM UI -->
                 <div class="card">
                     <h3>Beam Diagram</h3>
                     <canvas id="beamCanvas" width="500" height="200"></canvas>
-                    <i>This beam design wasn't part of the aggreement, i just designed it for demonstration purpose only.</i>
+                    <i>This beam design wasn't part of the aggreement, i just designed it for demonstration purpose
+                        only.</i>
                 </div>
 
             </div>
@@ -67,10 +72,12 @@
 
 
         <p style="text-align:center; opacity:0.6;">
-            A Final Year Project by David, Nurudeen, Waliy, & Abbas | Supervisor: Dr. H. I. Adebakin | All rights reserved &copy; 2026
+            A Final Year Project by David, Nurudeen, Waliy, & Abbas | Supervisor: Dr. H. I. Adebakin | All rights
+            reserved &copy; 2026
         </p>
     </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>

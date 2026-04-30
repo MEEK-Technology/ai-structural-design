@@ -37,6 +37,9 @@ async function generate() {
 
         document.getElementById("deflection").innerText = data.deflection;
 
+        // document.getElementById("support").innerText = data.support;
+        document.getElementById("support").innerText = data.input.support;
+
         drawCharts(data.graphs);  // Graphs calling
         drawBeamDiagram(data.input.span, data.input.load);  //  Beam UI calling
 
