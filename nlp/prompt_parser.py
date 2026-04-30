@@ -28,8 +28,6 @@ def extract_parameters(text):
 
     support_match = re.search(r'(simply supported|cantilever|continuous)', text)
 
-    # support = params.get("support", "simply_supported")
-
     fy_value = None
     if fy_match:
         fy_value = fy_match.group(1) or fy_match.group(2)

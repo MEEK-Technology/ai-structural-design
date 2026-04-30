@@ -97,7 +97,7 @@ def predict(data: dict):
     }
 
 
-def generate_diagrams(load, span):
+def generate_diagrams(load, span, support="simply_supported"):
     x_vals = []
     shear_vals = []
     moment_vals = []
