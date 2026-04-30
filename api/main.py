@@ -56,13 +56,13 @@ def predict(data: dict):
 
     beam_size = estimate_beam_size(span)
 
-    deflection_status = check_deflection(span, beam_size["depth"])
+    deflection_status = check_deflection(span, beam_size["depth"], support)
 
     support = params.get("support", "simply_supported")
     deflection_status = check_deflection(span, beam_size["depth"], support)
 
-    moment = bending_moment(total_load, span)
-    x, shear, moment_curve, load_curve = generate_diagrams(total_load, span)
+    moment = bending_moment(total_load, span, support)
+    x, shear, moment_curve, load_curve = generate_diagrams(total_load, span, support)
 
     return {
         "input": params,
@@ -97,7 +97,7 @@ def predict(data: dict):
     }
 
 
-def generate_diagrams(load, span, support="simply_supported"):
+def generate_diagrams(load, span, support):
     x_vals = []
     shear_vals = []
     moment_vals = []
@@ -107,8 +107,22 @@ def generate_diagrams(load, span, support="simply_supported"):
     for i in range(steps + 1):
         x = i * dx
 
-        shear = (load * span / 2) - (load * x)
-        moment = (load * x / 2) * (span - x)
+        if support == "simply_supported":
+            shear = (load * span / 2) - (load * x)
+            moment = (load * x / 2) * (span - x)
+
+        elif support == "cantilever":
+            shear = (load * span) - (load * x)
+            # moment = (load * x) * (span - x / 2)   # moment measuresd from the left
+            moment = load * (span - x)**2 / 2   # moment measured from the right
+
+        elif support == "continuous":
+            shear = (load * span / 2) - (load * x)
+            moment = (load * x / 2) * (span - x)  * 0.75  # simplified
+
+        else: # simply supported
+            shear = (load * span / 2) - (load * x)
+            moment = (load * x / 2) * (span - x)
 
         x_vals.append(round(x, 2))
         shear_vals.append(round(shear, 2))

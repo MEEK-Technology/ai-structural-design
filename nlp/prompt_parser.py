@@ -26,7 +26,9 @@ def extract_parameters(text):
     thickness_match = re.search(r'(?:thickness)\s*(\d+\.?\d*)', text)
     density_match = re.search(r'(?:density|unit weight)\s*(\d+\.?\d*)', text)
 
-    support_match = re.search(r'(simply supported|cantilever|continuous)', text)
+    # support_match = re.search(r'(simply supported|cantilever|continuous)', text)
+
+    support = params.get("support", "simply_supported")
 
     fy_value = None
     if fy_match:
