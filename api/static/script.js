@@ -42,7 +42,7 @@ async function generate() {
 
     } catch (error) {
         console.error("Error:", error);   // ERROR DEBUG CATCHER
-        alert("Something went wrong. Check your console.. and try again!"); 
+        alert("Something went wrong. Check your console.. and try again!");
         alert("Make sure you're connected to the internet to load graph.");
     }
 }
@@ -77,7 +77,7 @@ function drawCharts(graphs) {
             },
             tooltip: {
                 callbacks: {
-                    label: function(context) {
+                    label: function (context) {
                         return context.dataset.label + ": " + context.raw.toFixed(2);
                     }
                 }
@@ -123,7 +123,7 @@ function drawCharts(graphs) {
                 backgroundColor: "rgba(245,158,11,0.2)",
                 fill: true,
                 tension: 0.4,
-                pointRadius: function(ctx) {
+                pointRadius: function (ctx) {
                     return ctx.dataIndex === peak.index ? 6 : 0;
                 },
                 pointBackgroundColor: "#ff0000"
@@ -143,7 +143,7 @@ function drawCharts(graphs) {
                 backgroundColor: "rgba(16,185,129,0.2)",
                 fill: true,
                 tension: 0,
-                pointRadius: 0    
+                pointRadius: 0
             }]
         },
         options: options("Load Diagram")

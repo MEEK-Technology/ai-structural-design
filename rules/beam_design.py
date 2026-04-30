@@ -2,13 +2,25 @@
 
 import math
 
-def bending_moment(load, span):
+def bending_moment(load, span, support="simply_supported"):
     """
     Calculate bending moment (kNm)
     load: kN/m
     span: m
+    support: type of support (simply_supported, cantilever, continuous)
     """
-    return (load * span**2) / 8
+    if support == "simply_supported":
+        return (load * span**2) / 8
+
+    elif support == "cantilever":
+        return (load * span**2) / 2
+
+    elif support == "continuous":
+        return (load * span**2) / 12
+
+    else:
+        return (load * span**2) / 8
+    # return (load * span**2) / 8
 
 
 def shear_force(load, span, x):
