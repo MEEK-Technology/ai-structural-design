@@ -56,7 +56,7 @@ def predict(data: dict):
 
     beam_size = estimate_beam_size(span)
 
-    deflection_status = check_deflection(span, beam_size["depth"], support)
+    deflection_status = check_deflection(span, beam_size["depth"])
 
     support = params.get("support", "simply_supported")
     deflection_status = check_deflection(span, beam_size["depth"], support)

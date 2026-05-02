@@ -26,9 +26,9 @@ def extract_parameters(text):
     thickness_match = re.search(r'(?:thickness)\s*(\d+\.?\d*)', text)
     density_match = re.search(r'(?:density|unit weight)\s*(\d+\.?\d*)', text)
 
-    # support_match = re.search(r'(simply supported|cantilever|continuous)', text)
+    support_match = re.search(r'(simply supported|cantilever|continuous)', text)
 
-    support = params.get("support", "simply_supported")
+    # support = params.get("support", "simply_supported")
 
     fy_value = None
     if fy_match:
@@ -44,7 +44,8 @@ def extract_parameters(text):
         "wall_thickness": float(thickness_match.group(1)) if thickness_match else None,
         "density": float(density_match.group(1)) if density_match else None,
         "support": support_match.group(1) if support_match else "simply_supported"
-    }
+
+     }
 
 
 def apply_defaults(params):
