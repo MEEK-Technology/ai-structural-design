@@ -76,8 +76,13 @@ def recommend_reinforcement(As_required):
             "provided_area": round(provided_area, 2)
         })
 
-    # Pick best (least excess)
-    best = min(solutions, key=lambda x: x["provided_area"])
+    # Pick best (least excess area that still meets the requirement)
+    valid = [s for s in solutions if s["provided_area"] >= As_required]
+    if valid:
+        best = min(valid, key=lambda x: x["provided_area"])
+    else:
+        # Fallback: if none meet it exactly (shouldn't happen), pick the largest
+        best = max(solutions, key=lambda x: x["provided_area"])
 
     return best, solutions
 

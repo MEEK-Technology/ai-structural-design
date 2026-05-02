@@ -1,7 +1,4 @@
-from marshal import load
 import re
-
-from fastapi import params
 
 def extract_parameters(text):
     # Span (e.g., 6m or span 6m)
@@ -26,9 +23,7 @@ def extract_parameters(text):
     thickness_match = re.search(r'(?:thickness)\s*(\d+\.?\d*)', text)
     density_match = re.search(r'(?:density|unit weight)\s*(\d+\.?\d*)', text)
 
-    support_match = re.search(r'(simply supported|cantilever|continuous)', text)
-
-    # support = params.get("support", "simply_supported")
+    support_match = re.search(r'(simply supported|cantilever|continuous)', text, re.IGNORECASE)
 
     fy_value = None
     if fy_match:
@@ -43,12 +38,16 @@ def extract_parameters(text):
         "wall_height": float(height_match.group(1)) if height_match else None,
         "wall_thickness": float(thickness_match.group(1)) if thickness_match else None,
         "density": float(density_match.group(1)) if density_match else None,
-        "support": support_match.group(1) if support_match else "simply_supported"
-
+        "support": support_match.group(1).replace(" ", "_") if support_match else "simply_supported"
      }
 
 
 def apply_defaults(params):
+    if not params.get("span"):
+        raise ValueError("Span is required but was not provided or could not be parsed.")
+    if not params.get("load"):
+        raise ValueError("Load is required but was not provided or could not be parsed.")
+
     return {
         "span": params["span"],
         "load": params["load"],
@@ -57,6 +56,7 @@ def apply_defaults(params):
         "wall_height": params["wall_height"] if params["wall_height"] else 0.0,
         "wall_thickness": params["wall_thickness"] if params["wall_thickness"] else 0.0,
         "density": params["density"] if params["density"] else 2.87,  # Default density for concrete in kN/m²
+        "support": params.get("support", "simply_supported"),
     }
 
 

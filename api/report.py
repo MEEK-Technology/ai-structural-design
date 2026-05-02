@@ -12,7 +12,7 @@ def generate_pdf(data, filename="beam_report.pdf"):
 
     content.append(Paragraph(f"Span: {data['input']['span']} m", styles["Normal"]))
     content.append(Paragraph(f"Load: {data['input']['load']} kN/m", styles["Normal"]))
-    content.append(Paragraph(f"Concrete (fcu): {data['input']['fcu']}", styles["Normal"]))
+    content.append(Paragraph(f"Concrete (fcu): {data['input'].get('fcu') or data['input'].get('fck', 'N/A')}", styles["Normal"]))
     content.append(Paragraph(f"Steel (fy): {data['input']['fy']}", styles["Normal"]))
     content.append(Spacer(1, 10))
 

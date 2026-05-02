@@ -1,17 +1,14 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
 import joblib
 import pandas as pd
 
 from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall_load
 from rules.beam_design import bending_moment, recommend_reinforcement, estimate_beam_size
-# from rules.beam_design import steel_area as calc_steel_area
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from api.report import generate_pdf
 
 app = FastAPI()
-
-# manual_As = calc_steel_area(moment)
 
 # Load trained model
 model = joblib.load("model.pkl")
@@ -20,16 +17,19 @@ model = joblib.load("model.pkl")
 def predict(data: dict):
 
     # Handle prompt input or direct parameters
-    if "prompt" in data:
-        params = extract_parameters(data["prompt"])
-        params = apply_defaults(params)
-    else:
-        params = data
+    try:
+        if "prompt" in data:
+            params = extract_parameters(data["prompt"])
+            params = apply_defaults(params)
+        else:
+            params = data
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
 
     span = params["span"]
     load = params["load"]
-    fck = params["fcu"] if "fcu" in params else params["fck"]
-    fy = params["fy"]
+    fck = params.get("fcu") or params.get("fck") or 25.0
+    fy = params.get("fy") or 460.0
 
     # AI input for model
     input_df = pd.DataFrame([{
@@ -56,8 +56,6 @@ def predict(data: dict):
 
     beam_size = estimate_beam_size(span)
 
-    deflection_status = check_deflection(span, beam_size["depth"])
-
     support = params.get("support", "simply_supported")
     deflection_status = check_deflection(span, beam_size["depth"], support)
 
@@ -73,7 +71,7 @@ def predict(data: dict):
         },
 
         "results": {
-            # "steel_area_manual": round(manual_As, 2), # Comparison of AI with manual calculation
+
             "steel_area": round(float(steel_area), 2),
             "bending_moment": round(moment, 2),
             "wall_load": round(wall_load, 2),
