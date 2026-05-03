@@ -4,10 +4,10 @@ from fastapi.responses import FileResponse, JSONResponse
 import joblib
 import pandas as pd
 
-from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall_load
+from nlp.prompt_parser import extract_parameters, apply_defaults
 from rules.beam_design import (
     bending_moment, recommend_reinforcement, estimate_beam_size,
-    generate_diagrams, max_shear_force
+    generate_diagrams, max_shear_force, design_loads, design_moment
 )
 from api.report import generate_pdf
 
@@ -31,48 +31,62 @@ def predict(data: dict):
         return JSONResponse(status_code=400, content={"error": str(e)})
 
     span = params["span"]
-    load = params["load"]
+    load = params["load"]             # User-provided load (slab load / UDL)
     fck = params.get("fcu") or params.get("fck") or 25.0
     fy = params.get("fy") or 460.0
 
     beam_type = params.get("beam_type", "simply_supported")
     load_type = params.get("load_type", "udl")
     load_position = params.get("load_position")
-    support_left = params.get("support_left", "pinned")
-    support_right = params.get("support_right", "roller")
+    point_load = params.get("point_load", 0)
 
-    # AI input for model
+    # ── Step 1: Estimate beam size (needed for self-weight) ──
+    beam_size = estimate_beam_size(span, beam_type)
+
+    # ── Step 2: Calculate factored loads (BS 8110) ──
+    # n1 = slab/user load (UDL), n2 = beam self-weight, n3 = wall load, p1 = point load
+    slab_load = params.get("slab_load", 0) or load  # Use slab_load if given, else user's 'load'
+
+    loads = design_loads(
+        slab_load=slab_load,
+        beam_width_mm=beam_size["width"],
+        beam_depth_mm=beam_size["depth"],
+        wall_density=params.get("density", 0),
+        wall_thickness=params.get("wall_thickness", 0),
+        wall_height=params.get("wall_height", 0),
+        point_load=point_load,
+    )
+
+    w = loads["w_total_udl"]       # Total UDL = n1 + n2 + n3
+    p1 = loads["p1_point_load"]    # Point load (separate)
+
+    # ── Step 3: Calculate design moment (M_udl + M_point) ──
+    moments = design_moment(w, span, beam_type, p1, load_position)
+
+    # ── Step 4: AI prediction ──
     input_df = pd.DataFrame([{
         "span": span,
-        "load": load,
+        "load": w,
         "fck": fck,
         "fy": fy
     }])
 
-    wall_load = 0
-
-    if params.get("wall_height") and params.get("wall_thickness") and params.get("density"):
-        wall_load = calculate_wall_load(
-            params["density"],
-            params["wall_thickness"],
-            params["wall_height"]
-        )
-
-    # Engineering Calculations
-    total_load = load + wall_load
-
     steel_area = model.predict(input_df)[0]
     best_reinf, options = recommend_reinforcement(steel_area)
 
-    beam_size = estimate_beam_size(span, beam_type)
-
+    # ── Step 5: Deflection check ──
     deflection_status = check_deflection(span, beam_size["depth"], beam_type)
 
-    moment = bending_moment(total_load, span, beam_type, load_type, load_position)
-    shear = max_shear_force(total_load, span, beam_type, load_type, load_position)
+    # ── Step 6: Shear & diagrams (using total UDL for diagrams) ──
+    shear = max_shear_force(w, span, beam_type, "udl")
     x, shear_curve, moment_curve, load_curve = generate_diagrams(
-        total_load, span, beam_type, load_type, load_position
+        w, span, beam_type, "udl"
     )
+
+    # If there's also a point load, add its shear/moment to the diagram
+    if p1 > 0:
+        shear_p = max_shear_force(p1, span, beam_type, "point_load", load_position)
+        shear = shear + shear_p  # Combined max shear (conservative)
 
     return {
         "input": params,
@@ -82,12 +96,20 @@ def predict(data: dict):
             "depth": beam_size["depth"]
         },
 
+        "loading": loads,
+        "moments": moments,
+
         "results": {
             "steel_area": round(float(steel_area), 2),
-            "bending_moment": round(moment, 2),
+            "bending_moment": moments["M_total"],
+            "M_udl": moments["M_udl"],
+            "M_point": moments["M_point"],
             "max_shear_force": round(shear, 2),
-            "wall_load": round(wall_load, 2),
-            "total_load": round(total_load, 2),
+            "n1_slab_load": loads["n1_slab_load"],
+            "n2_beam_self_weight": loads["n2_beam_self_weight"],
+            "n3_wall_load": loads["n3_wall_load"],
+            "w_total_udl": loads["w_total_udl"],
+            "p1_point_load": loads["p1_point_load"],
         },
 
         "deflection": deflection_status,

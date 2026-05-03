@@ -2,6 +2,99 @@
 
 import math
 
+# Unit weight of reinforced concrete (kN/m³)
+CONCRETE_UNIT_WEIGHT = 24.0
+
+# BS 8110 partial safety factors
+DEAD_LOAD_FACTOR = 1.4    # γ_G for dead/permanent loads
+LIVE_LOAD_FACTOR = 1.6    # γ_Q for live/imposed loads
+
+
+# ──────────────────────────────────────────────
+#  Factored Load Calculations (BS 8110)
+# ──────────────────────────────────────────────
+
+def calc_beam_self_weight(width_mm, depth_mm):
+    """
+    Calculate factored beam self-weight (kN/m).
+    n2 = 1.4 × (width × depth × 24)
+    width_mm, depth_mm: beam dimensions in mm
+    Returns: factored self-weight in kN/m
+    """
+    width_m = width_mm / 1000
+    depth_m = depth_mm / 1000
+    unfactored = width_m * depth_m * CONCRETE_UNIT_WEIGHT
+    return round(DEAD_LOAD_FACTOR * unfactored, 3)
+
+
+def calc_wall_load(density, thickness, height):
+    """
+    Calculate factored wall load (kN/m).
+    n3 = 1.4 × (density × thickness × height)
+    density: unit weight of wall material (kN/m³), e.g. 2.87 for blockwork
+    thickness: wall thickness (m)
+    height: wall height (m)
+    Returns: factored wall load in kN/m
+    """
+    unfactored = density * thickness * height
+    return round(DEAD_LOAD_FACTOR * unfactored, 3)
+
+
+def design_loads(slab_load=0, beam_width_mm=230, beam_depth_mm=300,
+                 wall_density=0, wall_thickness=0, wall_height=0,
+                 point_load=0):
+    """
+    Calculate all factored load components per BS 8110.
+
+    n1 = slab_load (provided, already factored, kN/m)
+    n2 = beam self-weight (1.4 × b × d × 24, kN/m)
+    n3 = wall load (1.4 × density × thickness × height, kN/m)
+    p1 = point_load (kN)
+
+    w = n1 + n2 + n3  (total UDL, kN/m)
+
+    Returns dict with n1, n2, n3, w, p1
+    """
+    n1 = slab_load
+    n2 = calc_beam_self_weight(beam_width_mm, beam_depth_mm)
+    n3 = calc_wall_load(wall_density, wall_thickness, wall_height) if wall_height > 0 else 0
+
+    w = n1 + n2 + n3  # total UDL
+
+    return {
+        "n1_slab_load": round(n1, 3),
+        "n2_beam_self_weight": round(n2, 3),
+        "n3_wall_load": round(n3, 3),
+        "w_total_udl": round(w, 3),
+        "p1_point_load": round(point_load, 3),
+    }
+
+
+def design_moment(w, span, beam_type="simply_supported",
+                  point_load=0, load_position=None):
+    """
+    Calculate total design moment combining UDL and point load contributions.
+    M_total = M_udl(w) + M_point(p1)
+
+    For statically indeterminate (continuous) beams, BS 8110 coefficients
+    are used instead of wL²/8.
+    """
+    if load_position is None:
+        load_position = span / 2
+
+    # UDL moment
+    M_udl = bending_moment(w, span, beam_type, "udl")
+
+    # Point load moment (if any)
+    M_point = 0
+    if point_load > 0:
+        M_point = bending_moment(point_load, span, beam_type, "point_load", load_position)
+
+    return {
+        "M_udl": round(M_udl, 2),
+        "M_point": round(M_point, 2),
+        "M_total": round(M_udl + M_point, 2),
+    }
 
 # ──────────────────────────────────────────────
 #  Maximum Bending Moment

@@ -53,6 +53,12 @@ def extract_parameters(text):
     # ── Overhang length ──
     overhang_match = re.search(r'overhang\s*(?:of\s*)?(\d+\.?\d*)\s*m', text, re.IGNORECASE)
 
+    # ── Slab loading (e.g., "slab load 15kN/m" or "slab loading of 20") ──
+    slab_load_match = re.search(
+        r'slab\s+load(?:ing)?\s*(?:of\s*)?(\d+\.?\d*)\s*(?:kN/?m)?',
+        text, re.IGNORECASE
+    )
+
     # ── Process fy (may be in group 1 or group 2) ──
     fy_value = None
     if fy_match:
@@ -111,6 +117,8 @@ def extract_parameters(text):
     return {
         "span": float(span_match.group(1)) if span_match else None,
         "load": load_value,
+        "slab_load": float(slab_load_match.group(1)) if slab_load_match else None,
+        "point_load": float(point_load_match.group(1)) if point_load_match else 0,
         "fcu": float(fcu_match.group(1)) if fcu_match else None,
         "fy": float(fy_value) if fy_value else None,
         "wall_height": float(height_match.group(1)) if height_match else None,
@@ -134,6 +142,8 @@ def apply_defaults(params):
     return {
         "span": params["span"],
         "load": params["load"],
+        "slab_load": params.get("slab_load") or 0,
+        "point_load": params.get("point_load") or 0,
         "fcu": params["fcu"] if params["fcu"] else 25.0,
         "fy": params["fy"] if params["fy"] else 460.0,
         "wall_height": params["wall_height"] if params["wall_height"] else 0.0,

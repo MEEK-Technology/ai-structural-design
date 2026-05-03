@@ -48,19 +48,26 @@ async function generate() {
         document.getElementById("support").innerText =
             capitalize(data.input.support_left) + " — " + capitalize(data.input.support_right);
 
-        // ── Results ──
-        document.getElementById("steel").innerText = data.results.steel_area + " mm²";
+        // ── Load Breakdown ──
+        document.getElementById("n1").innerText = data.results.n1_slab_load + " kN/m";
+        document.getElementById("n2").innerText = data.results.n2_beam_self_weight + " kN/m";
+        document.getElementById("n3").innerText = data.results.n3_wall_load + " kN/m";
+        document.getElementById("wTotal").innerText = data.results.w_total_udl + " kN/m";
+        document.getElementById("p1").innerText = data.results.p1_point_load + " kN";
+
+        // ── Design Results ──
+        document.getElementById("mUdl").innerText = data.results.M_udl + " kNm";
+        document.getElementById("mPoint").innerText = data.results.M_point + " kNm";
         document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
         document.getElementById("shear").innerText = data.results.max_shear_force + " kN";
-        document.getElementById("wall").innerText = data.results.wall_load + " kN/m";
-        document.getElementById("total").innerText = data.results.total_load + " kN/m";
+        document.getElementById("steel").innerText = data.results.steel_area + " mm²";
 
         document.getElementById("reinf").innerText =
             data.reinforcement.recommended +
             " (As: " + data.reinforcement.provided_area + " mm²)";
 
         document.getElementById("beam").innerText =
-            data.beam.width + "mm width x " + data.beam.depth + "mm depth";
+            data.beam.width + "mm x " + data.beam.depth + "mm";
 
         document.getElementById("deflection").innerText = data.deflection;
 
