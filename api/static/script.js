@@ -28,8 +28,30 @@ async function generate() {
             return;
         }
 
+        // ── Beam type & load type labels ──
+        const typeLabels = {
+            "simply_supported": "Simply Supported",
+            "cantilever": "Cantilever",
+            "continuous": "Continuous",
+            "overhang": "Overhang"
+        };
+        const loadLabels = {
+            "udl": "UDL (Uniformly Distributed)",
+            "point_load": "Point Load",
+            "triangular": "Triangular"
+        };
+
+        document.getElementById("beamType").innerText =
+            typeLabels[data.input.beam_type] || data.input.beam_type;
+        document.getElementById("loadType").innerText =
+            loadLabels[data.input.load_type] || data.input.load_type;
+        document.getElementById("support").innerText =
+            capitalize(data.input.support_left) + " — " + capitalize(data.input.support_right);
+
+        // ── Results ──
         document.getElementById("steel").innerText = data.results.steel_area + " mm²";
         document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
+        document.getElementById("shear").innerText = data.results.max_shear_force + " kN";
         document.getElementById("wall").innerText = data.results.wall_load + " kN/m";
         document.getElementById("total").innerText = data.results.total_load + " kN/m";
 
@@ -42,17 +64,19 @@ async function generate() {
 
         document.getElementById("deflection").innerText = data.deflection;
 
-        // document.getElementById("support").innerText = data.support;
-        document.getElementById("support").innerText = data.input.support;
-
-        drawCharts(data.graphs);  // Graphs calling
-        drawBeamDiagram(data.input.span, data.input.load);  //  Beam UI calling
+        drawCharts(data.graphs);
+        drawBeamDiagram(data.input);
 
     } catch (error) {
-        console.error("Error:", error);   // ERROR DEBUG CATCHER
+        console.error("Error:", error);
         loader.style.display = "none";
         alert("Something went wrong. Check your console and try again!\nMake sure you're connected to the internet to load graphs.");
     }
+}
+
+function capitalize(str) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function drawCharts(graphs) {
@@ -164,19 +188,23 @@ function getMaxPoint(data) {
     return { max, index };
 }
 
-function drawBeamDiagram(span, load) {                 // Beam UI Diagram
+
+// ═══════════════════════════════════════════════
+//  BEAM DIAGRAM — Draws beam, supports & loads
+// ═══════════════════════════════════════════════
+
+function drawBeamDiagram(input) {
     const canvas = document.getElementById("beamCanvas");
     const ctx = canvas.getContext("2d");
-
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const margin = 50;
+    const margin = 60;
     const beamY = 100;
     const startX = margin;
     const endX = canvas.width - margin;
+    const beamLen = endX - startX;
 
-    // Draw Beam Line
+    // ── Draw Beam Line ──
     ctx.strokeStyle = "white";
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -184,33 +212,101 @@ function drawBeamDiagram(span, load) {                 // Beam UI Diagram
     ctx.lineTo(endX, beamY);
     ctx.stroke();
 
-    // Draw Supports
+    // ── Draw Supports ──
+    drawSupport(ctx, startX, beamY, input.support_left);
+    if (input.beam_type !== "cantilever") {
+        drawSupport(ctx, endX, beamY, input.support_right);
+    }
+
+    // ── Draw Load ──
+    if (input.load_type === "udl") {
+        drawUDL(ctx, startX, endX, beamY, input.load);
+    } else if (input.load_type === "point_load") {
+        const pos = input.load_position || input.span / 2;
+        const px = startX + (pos / input.span) * beamLen;
+        drawPointLoad(ctx, px, beamY, input.load);
+    } else if (input.load_type === "triangular") {
+        drawTriangularLoad(ctx, startX, endX, beamY, input.load);
+    }
+
+    // ── Labels ──
     ctx.fillStyle = "white";
+    ctx.font = "13px Arial";
+    ctx.fillText(`Span: ${input.span} m`, canvas.width / 2 - 35, beamY + 55);
+}
 
-    // Left support
-    ctx.beginPath();
-    ctx.moveTo(startX - 10, beamY + 20);
-    ctx.lineTo(startX + 10, beamY + 20);
-    ctx.lineTo(startX, beamY);
-    ctx.fill();
 
-    // Right support
-    ctx.beginPath();
-    ctx.moveTo(endX - 10, beamY + 20);
-    ctx.lineTo(endX + 10, beamY + 20);
-    ctx.lineTo(endX, beamY);
-    ctx.fill();
+function drawSupport(ctx, x, y, type) {
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
 
-    // Draw Load Arrows
+    if (type === "roller") {
+        // Triangle
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - 10, y + 18);
+        ctx.lineTo(x + 10, y + 18);
+        ctx.closePath();
+        ctx.stroke();
+        // Circle (roller)
+        ctx.beginPath();
+        ctx.arc(x, y + 23, 5, 0, 2 * Math.PI);
+        ctx.stroke();
+
+    } else if (type === "pinned") {
+        // Filled triangle
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - 10, y + 18);
+        ctx.lineTo(x + 10, y + 18);
+        ctx.closePath();
+        ctx.fill();
+        // Ground line
+        ctx.beginPath();
+        ctx.moveTo(x - 14, y + 18);
+        ctx.lineTo(x + 14, y + 18);
+        ctx.stroke();
+
+    } else if (type === "fixed") {
+        // Wall (vertical line with hatching)
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x, y - 20);
+        ctx.lineTo(x, y + 25);
+        ctx.stroke();
+        // Hatching lines
+        ctx.lineWidth = 1;
+        for (let i = -15; i <= 20; i += 7) {
+            ctx.beginPath();
+            ctx.moveTo(x, y + i);
+            ctx.lineTo(x - 10, y + i + 7);
+            ctx.stroke();
+        }
+
+    } else if (type === "free") {
+        // Nothing drawn — free end
+    }
+}
+
+
+function drawUDL(ctx, startX, endX, beamY, load) {
     ctx.strokeStyle = "#10b981";
     ctx.lineWidth = 2;
 
     const arrows = 10;
     const spacing = (endX - startX) / arrows;
 
+    // Top line connecting arrows
+    ctx.beginPath();
+    ctx.moveTo(startX, beamY - 30);
+    ctx.lineTo(endX, beamY - 30);
+    ctx.stroke();
+
     for (let i = 0; i <= arrows; i++) {
         let x = startX + i * spacing;
 
+        // Vertical arrow line
         ctx.beginPath();
         ctx.moveTo(x, beamY - 30);
         ctx.lineTo(x, beamY);
@@ -218,22 +314,80 @@ function drawBeamDiagram(span, load) {                 // Beam UI Diagram
 
         // Arrow head
         ctx.beginPath();
-        ctx.moveTo(x - 5, beamY - 10);
+        ctx.moveTo(x - 4, beamY - 8);
         ctx.lineTo(x, beamY);
-        ctx.lineTo(x + 5, beamY - 10);
+        ctx.lineTo(x + 4, beamY - 8);
         ctx.stroke();
     }
 
-    // Labels
-    ctx.fillStyle = "white";
-    ctx.font = "14px Arial";
-
-    ctx.fillText(`Span: ${span} m`, canvas.width / 2 - 40, beamY + 40);
-    ctx.fillText(`Load: ${load} kN/m`, canvas.width / 2 - 50, beamY - 50);
-    // if (data.results.wall_load > 0) {
-    //     ctx.fillText("Wall Load Included", canvas.width / 2 - 60, 20);
-    // }
+    // Load label
+    ctx.fillStyle = "#10b981";
+    ctx.font = "12px Arial";
+    ctx.fillText(`${load} kN/m`, (startX + endX) / 2 - 25, beamY - 35);
 }
+
+
+function drawPointLoad(ctx, px, beamY, load) {
+    ctx.strokeStyle = "#ef4444";
+    ctx.lineWidth = 3;
+
+    // Arrow line
+    ctx.beginPath();
+    ctx.moveTo(px, beamY - 50);
+    ctx.lineTo(px, beamY);
+    ctx.stroke();
+
+    // Arrow head
+    ctx.beginPath();
+    ctx.moveTo(px - 6, beamY - 10);
+    ctx.lineTo(px, beamY);
+    ctx.lineTo(px + 6, beamY - 10);
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = "#ef4444";
+    ctx.font = "bold 13px Arial";
+    ctx.fillText(`${load} kN`, px - 18, beamY - 55);
+}
+
+
+function drawTriangularLoad(ctx, startX, endX, beamY, load) {
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2;
+
+    const arrows = 10;
+    const spacing = (endX - startX) / arrows;
+
+    // Slanted top line (0 at left → max at right)
+    ctx.beginPath();
+    ctx.moveTo(startX, beamY);
+    ctx.lineTo(endX, beamY - 40);
+    ctx.stroke();
+
+    for (let i = 1; i <= arrows; i++) {
+        let x = startX + i * spacing;
+        let height = (i / arrows) * 40;  // Linearly increasing
+
+        // Vertical arrow
+        ctx.beginPath();
+        ctx.moveTo(x, beamY - height);
+        ctx.lineTo(x, beamY);
+        ctx.stroke();
+
+        // Arrow head
+        ctx.beginPath();
+        ctx.moveTo(x - 4, beamY - 8);
+        ctx.lineTo(x, beamY);
+        ctx.lineTo(x + 4, beamY - 8);
+        ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = "#f59e0b";
+    ctx.font = "12px Arial";
+    ctx.fillText(`${load} kN/m (max)`, endX - 70, beamY - 45);
+}
+
 
 async function downloadReport() {
     const prompt = document.getElementById("prompt").value;

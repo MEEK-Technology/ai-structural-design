@@ -5,13 +5,17 @@ import joblib
 import pandas as pd
 
 from nlp.prompt_parser import extract_parameters, apply_defaults, calculate_wall_load
-from rules.beam_design import bending_moment, recommend_reinforcement, estimate_beam_size
+from rules.beam_design import (
+    bending_moment, recommend_reinforcement, estimate_beam_size,
+    generate_diagrams, max_shear_force
+)
 from api.report import generate_pdf
 
 app = FastAPI()
 
 # Load trained model
 model = joblib.load("model.pkl")
+
 
 @app.post("/predict")
 def predict(data: dict):
@@ -30,6 +34,12 @@ def predict(data: dict):
     load = params["load"]
     fck = params.get("fcu") or params.get("fck") or 25.0
     fy = params.get("fy") or 460.0
+
+    beam_type = params.get("beam_type", "simply_supported")
+    load_type = params.get("load_type", "udl")
+    load_position = params.get("load_position")
+    support_left = params.get("support_left", "pinned")
+    support_right = params.get("support_right", "roller")
 
     # AI input for model
     input_df = pd.DataFrame([{
@@ -56,11 +66,13 @@ def predict(data: dict):
 
     beam_size = estimate_beam_size(span)
 
-    support = params.get("support", "simply_supported")
-    deflection_status = check_deflection(span, beam_size["depth"], support)
+    deflection_status = check_deflection(span, beam_size["depth"], beam_type)
 
-    moment = bending_moment(total_load, span, support)
-    x, shear, moment_curve, load_curve = generate_diagrams(total_load, span, support)
+    moment = bending_moment(total_load, span, beam_type, load_type, load_position)
+    shear = max_shear_force(total_load, span, beam_type, load_type, load_position)
+    x, shear_curve, moment_curve, load_curve = generate_diagrams(
+        total_load, span, beam_type, load_type, load_position
+    )
 
     return {
         "input": params,
@@ -71,9 +83,9 @@ def predict(data: dict):
         },
 
         "results": {
-
             "steel_area": round(float(steel_area), 2),
             "bending_moment": round(moment, 2),
+            "max_shear_force": round(shear, 2),
             "wall_load": round(wall_load, 2),
             "total_load": round(total_load, 2),
         },
@@ -85,72 +97,42 @@ def predict(data: dict):
             "provided_area": best_reinf["provided_area"],
             "all_options": options
         },
-        
+
         "graphs": {
             "x": x,
-            "shear": shear,
+            "shear": shear_curve,
             "moment": moment_curve,
             "load": load_curve
         }
     }
 
 
-def generate_diagrams(load, span, support):
-    x_vals = []
-    shear_vals = []
-    moment_vals = []
-    steps = 20
-    dx = span / steps
-
-    for i in range(steps + 1):
-        x = i * dx
-
-        if support == "simply_supported":
-            shear = (load * span / 2) - (load * x)
-            moment = (load * x / 2) * (span - x)
-
-        elif support == "cantilever":
-            shear = (load * span) - (load * x)
-            # moment = (load * x) * (span - x / 2)   # moment measuresd from the left
-            moment = load * (span - x)**2 / 2   # moment measured from the right
-
-        elif support == "continuous":
-            shear = (load * span / 2) - (load * x)
-            moment = (load * x / 2) * (span - x)  * 0.75  # simplified
-
-        else: # simply supported
-            shear = (load * span / 2) - (load * x)
-            moment = (load * x / 2) * (span - x)
-
-        x_vals.append(round(x, 2))
-        shear_vals.append(round(shear, 2))
-        moment_vals.append(round(moment, 2))
-
-    load_vals = [load for _ in x_vals]
-
-    return x_vals, shear_vals, moment_vals, load_vals
-
-
-def check_deflection(span, depth, support_type="simply_supported"):
+def check_deflection(span, depth, beam_type="simply_supported"):
     limits = {
         "simply_supported": 20,
         "cantilever": 7,
-        "continuous": 26
+        "continuous": 26,
+        "overhang": 20,
     }
 
-    allowable = span * 1000 / limits[support_type]
+    limit = limits.get(beam_type, 20)
+    allowable = span * 1000 / limit
 
     if depth >= allowable:
         return "SAFE"
     else:
         return "NOT SAFE"
-    
-    
+
+
 @app.post("/download-report")
 def download_report(data: dict):
 
     # reuse prediction logic
     result = predict(data)
+
+    # If predict returned a JSONResponse (error), forward it
+    if isinstance(result, JSONResponse):
+        return result
 
     file_path = generate_pdf(result)
 
@@ -176,7 +158,10 @@ def system_info():
             "Graph visualization",
             "Wall load calculation",
             "Reinforcement design",
-            "PDF report generation"
+            "PDF report generation",
+            "Multiple beam types (Simply Supported, Cantilever, Continuous, Overhang)",
+            "Multiple load types (UDL, Point Load, Triangular)",
+            "Support conditions (Roller, Pinned, Fixed)"
         ]
     }
 
@@ -184,7 +169,7 @@ def system_info():
 @app.get("/version")
 def version():
     return {
-        "version": "1.0.0",
+        "version": "2.0.0",
         "release": "Final Year Project",
         "year": 2026
     }
@@ -193,7 +178,12 @@ def version():
 @app.get("/example")
 def example_input():
     return {
-        "prompt": "Design a beam with span 6m, load 25kN/m, concrete grade 30 and steel grade 500"
+        "examples": [
+            {"prompt": "Design a simply supported beam with span 6m, UDL of 25kN/m, concrete grade 30 and steel grade 500"},
+            {"prompt": "Design a cantilever beam with span 4m, point load of 30kN at 4m"},
+            {"prompt": "Design a continuous beam with span 8m and UDL 20kN/m"},
+            {"prompt": "Design a simply supported beam with span 5m and triangular load of 15kN/m"},
+        ]
     }
 
 app.mount("/", StaticFiles(directory="api/static", html=True), name="static")

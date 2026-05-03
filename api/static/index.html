@@ -20,7 +20,7 @@
 
         <!-- INPUT CARD -->
         <div class="card">
-            <textarea id="prompt" placeholder="Describe your beam design..."></textarea>
+            <textarea id="prompt" placeholder="Describe your beam design...&#10;&#10;Examples:&#10;• Design a simply supported beam with span 6m, UDL of 25kN/m, concrete grade 30 and steel grade 500&#10;• Design a cantilever beam with span 4m, point load of 30kN at 4m&#10;• Design a continuous beam with span 8m and triangular load of 20kN/m"></textarea>
             <button onclick="generate()">Generate Design</button>
             <p class="loader" id="loader">Processing...</p>
         </div>
@@ -34,8 +34,13 @@
                 <div class="card">
                     <h3>Results</h3>
 
+                    <div class="result-item"><strong>Beam Type:</strong> <span id="beamType"></span></div>
+                    <div class="result-item"><strong>Load Type:</strong> <span id="loadType"></span></div>
+                    <div class="result-item"><strong>Support:</strong> <span id="support"></span></div>
+
                     <div class="result-item">Steel Area: <span id="steel"></span></div>
                     <div class="result-item">Moment: <span id="moment"></span></div>
+                    <div class="result-item">Max Shear: <span id="shear"></span></div>
                     <div class="result-item">Wall Load: <span id="wall"></span></div>
                     <div class="result-item">Total Load: <span id="total"></span></div>
                     <div class="result-item"><strong>Reinforcement: </strong> <span id="reinf"></span></div>
@@ -44,8 +49,6 @@
 
                     <div class="result-item"><strong>Deflection Check:</strong> <span id="deflection"></span></div>
 
-                    <div class="result-item"><strong>Support Type:</strong> <span id="support"></span></div>
-
                     <button onclick="downloadReport()">Download PDF</button>
                 </div>
 
@@ -53,8 +56,6 @@
                 <div class="card">
                     <h3>Beam Diagram</h3>
                     <canvas id="beamCanvas" width="500" height="200"></canvas>
-                    <!-- <i>This beam design wasn't part of the aggreement, i just designed it for demonstration purpose
-                        only.</i> -->
                 </div>
 
             </div>
