@@ -64,7 +64,7 @@ def predict(data: dict):
     steel_area = model.predict(input_df)[0]
     best_reinf, options = recommend_reinforcement(steel_area)
 
-    beam_size = estimate_beam_size(span)
+    beam_size = estimate_beam_size(span, beam_type)
 
     deflection_status = check_deflection(span, beam_size["depth"], beam_type)
 

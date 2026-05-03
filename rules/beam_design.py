@@ -318,15 +318,56 @@ def recommend_reinforcement(As_required):
 
 
 # ──────────────────────────────────────────────
-#  Beam Size Estimation
+#  Beam Size Estimation (Standard Sizes)
 # ──────────────────────────────────────────────
 
-def estimate_beam_size(span):
-    d = (span * 1000) / 20   # convert m → mm
-    h = d + 50               # add cover
-    b = 0.5 * h
+# Standard width progression: 230 → 300 → 450 → 600 → 750 → 900 ...
+#   (first increase +70mm, then consistent +150mm)
+STANDARD_WIDTHS = [230, 300, 450, 600, 750, 900, 1050, 1200]
+
+# Standard depth progression: 300 → 450 → 600 → 750 → 900 → 1050 → 1200 ...
+#   (consistent increase of 150mm)
+STANDARD_DEPTHS = [300, 450, 600, 750, 900, 1050, 1200, 1350, 1500]
+
+# Span/depth ratio limits per beam type
+_DEFLECTION_LIMITS = {
+    "simply_supported": 20,
+    "cantilever": 7,
+    "continuous": 26,
+    "overhang": 20,
+}
+
+
+def estimate_beam_size(span, beam_type="simply_supported"):
+    """
+    Select the smallest standard beam width and depth that satisfies
+    the span-to-depth deflection limit for the given beam type.
+
+    Width progression : 230, 300, 450, 600, 750, 900 … mm
+    Depth progression : 300, 450, 600, 750, 900, 1050, 1200 … mm
+    """
+    limit = _DEFLECTION_LIMITS.get(beam_type, 20)
+    min_depth = (span * 1000) / limit   # required minimum depth (mm)
+
+    # Pick the smallest standard depth that satisfies the deflection limit
+    depth = STANDARD_DEPTHS[-1]  # fallback to largest
+    for d in STANDARD_DEPTHS:
+        if d >= min_depth:
+            depth = d
+            break
+
+    # Pick the smallest standard width ≥ half the depth (common practice)
+    half_depth = depth * 0.5
+    width = STANDARD_WIDTHS[-1]  # fallback to largest
+    for w in STANDARD_WIDTHS:
+        if w >= half_depth:
+            width = w
+            break
+
+    # Ensure minimum width of 230mm
+    width = max(width, 230)
 
     return {
-        "width": round(b),
-        "depth": round(h)
+        "width": width,
+        "depth": depth
     }
