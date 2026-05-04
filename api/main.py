@@ -220,4 +220,17 @@ def example_input():
         ]
     }
 
+
+@app.post("/parse")
+def parse_prompt(data: dict):
+    if "prompt" not in data:
+        return {"error": "No prompt provided"}
+
+    params = extract_parameters(data["prompt"])
+    params = apply_defaults(params)
+
+    return {
+        "parsed": params
+    }
+
 app.mount("/", StaticFiles(directory="api/static", html=True), name="static")
