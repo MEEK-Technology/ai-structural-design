@@ -209,37 +209,63 @@ function drawBeamDiagram(input) {
     const beamY = 100;
     const startX = margin;
     const endX = canvas.width - margin;
+
+    const oh = input.overhang_length || 0;
+    const totalLen = input.span + oh;
     const beamLen = endX - startX;
+
+    // Support positions (proportional to total length)
+    const supportAx = startX;
+    const supportBx = startX + (input.span / totalLen) * beamLen;
+    const freeEndX = endX;  // End of overhang (or end of beam if no overhang)
 
     // ── Draw Beam Line ──
     ctx.strokeStyle = "white";
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(startX, beamY);
-    ctx.lineTo(endX, beamY);
+    ctx.lineTo(freeEndX, beamY);
     ctx.stroke();
 
     // ── Draw Supports ──
-    drawSupport(ctx, startX, beamY, input.support_left);
-    if (input.beam_type !== "cantilever") {
-        drawSupport(ctx, endX, beamY, input.support_right);
+    drawSupport(ctx, supportAx, beamY, input.support_left);
+    if (input.beam_type === "overhang") {
+        drawSupport(ctx, supportBx, beamY, input.support_right || "roller");
+    } else if (input.beam_type !== "cantilever") {
+        drawSupport(ctx, freeEndX, beamY, input.support_right);
     }
 
     // ── Draw Load ──
     if (input.load_type === "udl") {
-        drawUDL(ctx, startX, endX, beamY, input.load);
+        drawUDL(ctx, startX, freeEndX, beamY, input.load);
     } else if (input.load_type === "point_load") {
         const pos = input.load_position || input.span / 2;
-        const px = startX + (pos / input.span) * beamLen;
+        const px = startX + (pos / totalLen) * beamLen;
         drawPointLoad(ctx, px, beamY, input.load);
     } else if (input.load_type === "triangular") {
-        drawTriangularLoad(ctx, startX, endX, beamY, input.load);
+        drawTriangularLoad(ctx, startX, freeEndX, beamY, input.load);
     }
 
     // ── Labels ──
     ctx.fillStyle = "white";
     ctx.font = "13px Arial";
-    ctx.fillText(`Span: ${input.span} m`, canvas.width / 2 - 35, beamY + 55);
+
+    if (oh > 0) {
+        // Label span and overhang separately
+        const midSpan = (supportAx + supportBx) / 2;
+        ctx.fillText(`Span: ${input.span}m`, midSpan - 25, beamY + 55);
+
+        const midOH = (supportBx + freeEndX) / 2;
+        ctx.fillText(`OH: ${oh}m`, midOH - 15, beamY + 55);
+
+        // Label supports
+        ctx.font = "11px Arial";
+        ctx.fillText("A", supportAx - 3, beamY + 45);
+        ctx.fillText("B", supportBx - 3, beamY + 45);
+        ctx.fillText("C", freeEndX - 3, beamY + 10);
+    } else {
+        ctx.fillText(`Span: ${input.span}m`, canvas.width / 2 - 35, beamY + 55);
+    }
 }
 
 

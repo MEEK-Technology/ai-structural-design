@@ -71,7 +71,7 @@ def design_loads(slab_load=0, beam_width_mm=230, beam_depth_mm=300,
 
 
 def design_moment(w, span, beam_type="simply_supported",
-                  point_load=0, load_position=None):
+                  point_load=0, load_position=None, overhang_length=0):
     """
     Calculate total design moment combining UDL and point load contributions.
     M_total = M_udl(w) + M_point(p1)
@@ -83,12 +83,14 @@ def design_moment(w, span, beam_type="simply_supported",
         load_position = span / 2
 
     # UDL moment
-    M_udl = bending_moment(w, span, beam_type, "udl")
+    M_udl = bending_moment(w, span, beam_type, "udl",
+                           overhang_length=overhang_length)
 
     # Point load moment (if any)
     M_point = 0
     if point_load > 0:
-        M_point = bending_moment(point_load, span, beam_type, "point_load", load_position)
+        M_point = bending_moment(point_load, span, beam_type, "point_load",
+                                 load_position, overhang_length)
 
     return {
         "M_udl": round(M_udl, 2),
@@ -100,14 +102,16 @@ def design_moment(w, span, beam_type="simply_supported",
 #  Maximum Bending Moment
 # ──────────────────────────────────────────────
 
-def bending_moment(load, span, beam_type="simply_supported", load_type="udl", load_position=None):
+def bending_moment(load, span, beam_type="simply_supported", load_type="udl",
+                   load_position=None, overhang_length=0):
     """
     Calculate maximum bending moment (kNm).
     load: kN/m for UDL/triangular, kN for point load
-    span: m
+    span: m (distance between supports A and B)
     beam_type: simply_supported | cantilever | continuous | overhang
     load_type: udl | point_load | triangular
-    load_position: distance from left support (m) for point load (default: midspan)
+    load_position: distance from left support (m) for point load
+    overhang_length: length of overhang beyond support B (m)
     """
     if load_position is None:
         load_position = span if beam_type == "cantilever" else span / 2
@@ -142,15 +146,31 @@ def bending_moment(load, span, beam_type="simply_supported", load_type="udl", lo
             return (load * span**2) / 12
 
     elif beam_type == "overhang":
+        oh = overhang_length
         if load_type == "point_load":
+            # Point load at distance 'a' from support A
             a = load_position
             if a <= span:
+                # Load on the main span: M_max = Wab/L at the load point
                 return load * a * (span - a) / span
             else:
-                return load * (a - span)  # cantilever portion
-        elif load_type == "triangular":
-            return (load * span**2) / (9 * math.sqrt(3))
-        else:  # udl
+                # Load on the overhang: M_max = P × overhang at support B
+                return load * (a - span)
+        elif load_type == "udl":
+            # UDL over full length (L + overhang)
+            total_len = span + oh
+            R_B = load * total_len**2 / (2 * span)
+            R_A = load * total_len - R_B
+            # Max hogging moment at B = -w × oh² / 2
+            M_at_B = abs(load * oh**2 / 2)
+            # Max sagging moment in span (at x where V=0)
+            if R_A > 0:
+                x_zero_shear = R_A / load
+                M_sag = R_A * x_zero_shear - load * x_zero_shear**2 / 2
+            else:
+                M_sag = 0
+            return max(M_at_B, M_sag)
+        else:
             return (load * span**2) / 8
 
     # Fallback
@@ -161,7 +181,8 @@ def bending_moment(load, span, beam_type="simply_supported", load_type="udl", lo
 #  Maximum Shear Force
 # ──────────────────────────────────────────────
 
-def max_shear_force(load, span, beam_type="simply_supported", load_type="udl", load_position=None):
+def max_shear_force(load, span, beam_type="simply_supported", load_type="udl",
+                    load_position=None, overhang_length=0):
     """
     Calculate maximum shear force (kN).
     """
@@ -195,10 +216,21 @@ def max_shear_force(load, span, beam_type="simply_supported", load_type="udl", l
             return load * span / 2
 
     elif beam_type == "overhang":
+        oh = overhang_length
         if load_type == "point_load":
-            return load
-        elif load_type == "triangular":
-            return load * span / 3
+            a = load_position
+            if a > span:
+                # Point load on overhang: R_B = P(a)/L, R_A = P - R_B
+                R_B = load * a / span
+                R_A = load - R_B  # can be negative
+                return max(abs(R_A), abs(R_B), load)
+            else:
+                return max(load * (span - a) / span, load * a / span)
+        elif load_type == "udl":
+            total_len = span + oh
+            R_B = load * total_len**2 / (2 * span)
+            R_A = load * total_len - R_B
+            return max(abs(R_A), abs(R_B))
         else:
             return load * span / 2
 
@@ -209,25 +241,30 @@ def max_shear_force(load, span, beam_type="simply_supported", load_type="udl", l
 #  Diagram Data Generation (V(x), M(x))
 # ──────────────────────────────────────────────
 
-def generate_diagrams(load, span, beam_type="simply_supported", load_type="udl", load_position=None):
+def generate_diagrams(load, span, beam_type="simply_supported", load_type="udl",
+                      load_position=None, overhang_length=0):
     """
     Generate x, shear, moment, and load arrays for plotting.
+    For overhang beams, diagrams extend over the full length (span + overhang).
     Returns (x_vals, shear_vals, moment_vals, load_vals)
     """
     if load_position is None:
         load_position = span if beam_type == "cantilever" else span / 2
+
+    # Total length for diagram generation
+    total_length = span + overhang_length if beam_type == "overhang" else span
 
     x_vals = []
     shear_vals = []
     moment_vals = []
     load_vals = []
     steps = 40
-    dx = span / steps
+    dx = total_length / steps
 
     for i in range(steps + 1):
         x = round(i * dx, 4)
         shear, moment, load_val = _compute_point(
-            x, load, span, beam_type, load_type, load_position
+            x, load, span, beam_type, load_type, load_position, overhang_length
         )
         x_vals.append(round(x, 3))
         shear_vals.append(round(shear, 3))
@@ -237,7 +274,7 @@ def generate_diagrams(load, span, beam_type="simply_supported", load_type="udl",
     return x_vals, shear_vals, moment_vals, load_vals
 
 
-def _compute_point(x, load, span, beam_type, load_type, load_position):
+def _compute_point(x, load, span, beam_type, load_type, load_position, overhang_length=0):
     """Compute shear, moment, and load intensity at position x."""
 
     # ── Simply Supported ──
@@ -303,20 +340,52 @@ def _compute_point(x, load, span, beam_type, load_type, load_position):
             moment = (R_A * x - load * x**3 / (6 * span)) * 0.75
             return shear, moment, load * x / span
 
-    # ── Overhang (simply supported with overhang on right) ──
+    # ── Overhang (supported at A=0 and B=span, overhang from B to span+oh) ──
     elif beam_type == "overhang":
-        if load_type == "udl":
-            shear = load * span / 2 - load * x
-            moment = load * x * (span - x) / 2
-            return shear, moment, load
+        oh = overhang_length
+        total_len = span + oh
 
-        elif load_type == "point_load":
-            a = load_position
-            R_A = load * (span - a) / span
-            if x < a:
+        if load_type == "point_load":
+            a = load_position  # load position from A
+            # Reactions: ΣM_A=0 → R_B×L = P×a → R_B = Pa/L
+            R_B = load * a / span
+            R_A = load - R_B
+
+            if x < min(a, span):  # Before load and before B
                 return R_A, R_A * x, 0
-            else:
+            elif x < span and x >= a:  # After load, before B
                 return R_A - load, R_A * x - load * (x - a), 0
+            elif x == span:  # At support B (just before)
+                V_before_B = R_A - (load if a <= span else 0)
+                M_at_B = R_A * span - (load * (span - a) if a <= span else 0)
+                return V_before_B, M_at_B, 0
+            else:  # On the overhang (x > span)
+                if a <= span:
+                    # Load was on the main span, no load on overhang
+                    shear = R_A - load + R_B  # = 0
+                    moment = R_A * x - load * (x - a) + R_B * (x - span)
+                else:
+                    # Load is on the overhang at distance a from A
+                    if x < a:
+                        shear = R_A + R_B  # = load (carried to overhang)
+                        moment = R_A * x + R_B * (x - span)
+                    else:
+                        shear = R_A + R_B - load  # = 0
+                        moment = R_A * x + R_B * (x - span) - load * (x - a)
+                return shear, moment, 0
+
+        elif load_type == "udl":
+            # UDL over full length (span + overhang)
+            R_B = load * total_len**2 / (2 * span)
+            R_A = load * total_len - R_B
+
+            if x <= span:
+                shear = R_A - load * x
+                moment = R_A * x - load * x**2 / 2
+            else:
+                shear = R_A - load * x + R_B
+                moment = R_A * x - load * x**2 / 2 + R_B * (x - span)
+            return shear, moment, load
 
         elif load_type == "triangular":
             R_A = load * span / 6

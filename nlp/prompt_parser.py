@@ -50,8 +50,11 @@ def extract_parameters(text):
         text, re.IGNORECASE
     )
 
-    # ── Overhang length ──
-    overhang_match = re.search(r'overhang\s*(?:of\s*)?(\d+\.?\d*)\s*m', text, re.IGNORECASE)
+    # ── Overhang length (e.g., "overhang BC of 2m", "overhang of 2m", "overhang 2m") ──
+    overhang_match = re.search(
+        r'overhang(?:\s+\w+)*?\s*(?:of\s+)?(\d+\.?\d*)\s*m',
+        text, re.IGNORECASE
+    )
 
     # ── Slab loading (e.g., "slab load 15kN/m" or "slab loading of 20") ──
     slab_load_match = re.search(
@@ -76,6 +79,11 @@ def extract_parameters(text):
             beam_type = "continuous"
         elif "overhang" in raw:
             beam_type = "overhang"
+
+    # If an overhang length is mentioned, it's an overhang beam
+    # (even if "simply supported" was also mentioned in the prompt)
+    if overhang_match:
+        beam_type = "overhang"
 
     # ── Determine load type ──
     load_type = "udl"
@@ -107,6 +115,9 @@ def extract_parameters(text):
     elif beam_type == "continuous":
         default_left = "fixed"
         default_right = "pinned"
+    elif beam_type == "overhang":
+        default_left = "pinned"
+        default_right = "roller"
     else:
         default_left = "pinned"
         default_right = "roller"
@@ -114,8 +125,20 @@ def extract_parameters(text):
     support_left = support_left_match.group(1).lower() if support_left_match else default_left
     support_right = support_right_match.group(1).lower() if support_right_match else default_right
 
+    # ── Determine load position ──
+    load_pos = float(load_position_match.group(1)) if load_position_match else None
+    overhang_len = float(overhang_match.group(1)) if overhang_match else None
+
+    # "free end" detection: if load is at the free end of an overhang,
+    # load_position = span + overhang_length
+    free_end_match = re.search(r'free\s+end', text, re.IGNORECASE)
+    span_val = float(span_match.group(1)) if span_match else None
+
+    if beam_type == "overhang" and free_end_match and overhang_len and span_val:
+        load_pos = span_val + overhang_len
+
     return {
-        "span": float(span_match.group(1)) if span_match else None,
+        "span": span_val,
         "load": load_value,
         "slab_load": float(slab_load_match.group(1)) if slab_load_match else None,
         "point_load": float(point_load_match.group(1)) if point_load_match else 0,
@@ -126,10 +149,10 @@ def extract_parameters(text):
         "density": float(density_match.group(1)) if density_match else None,
         "beam_type": beam_type,
         "load_type": load_type,
-        "load_position": float(load_position_match.group(1)) if load_position_match else None,
+        "load_position": load_pos,
         "support_left": support_left,
         "support_right": support_right,
-        "overhang_length": float(overhang_match.group(1)) if overhang_match else None,
+        "overhang_length": overhang_len,
     }
 
 

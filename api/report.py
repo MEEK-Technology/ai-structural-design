@@ -20,12 +20,20 @@ def generate_pdf(data, filename="beam_report.pdf"):
     content.append(Paragraph(f"Support: {data['input'].get('support_left', 'pinned').title()} — {data['input'].get('support_right', 'roller').title()}", styles["Normal"]))
     content.append(Spacer(1, 10))
 
-    # Results
+    # Results - Load breakdown
+    content.append(Paragraph(f"n1 Slab Load: {data['results'].get('n1_slab_load', 0)} kN/m", styles["Normal"]))
+    content.append(Paragraph(f"n2 Beam Self-Weight: {data['results'].get('n2_beam_self_weight', 0)} kN/m", styles["Normal"]))
+    content.append(Paragraph(f"n3 Wall Load: {data['results'].get('n3_wall_load', 0)} kN/m", styles["Normal"]))
+    content.append(Paragraph(f"w Total UDL: {data['results'].get('w_total_udl', 0)} kN/m", styles["Normal"]))
+    content.append(Paragraph(f"p1 Point Load: {data['results'].get('p1_point_load', 0)} kN", styles["Normal"]))
+    content.append(Spacer(1, 10))
+
+    # Design results
     content.append(Paragraph(f"Steel Area: {data['results']['steel_area']} mm²", styles["Normal"]))
-    content.append(Paragraph(f"Bending Moment: {data['results']['bending_moment']} kNm", styles["Normal"]))
+    content.append(Paragraph(f"M (UDL): {data['results'].get('M_udl', 'N/A')} kNm", styles["Normal"]))
+    content.append(Paragraph(f"M (Point): {data['results'].get('M_point', 'N/A')} kNm", styles["Normal"]))
+    content.append(Paragraph(f"M (Total): {data['results']['bending_moment']} kNm", styles["Normal"]))
     content.append(Paragraph(f"Max Shear Force: {data['results'].get('max_shear_force', 'N/A')} kN", styles["Normal"]))
-    content.append(Paragraph(f"Wall Load: {data['results']['wall_load']} kN/m", styles["Normal"]))
-    content.append(Paragraph(f"Total Load: {data['results']['total_load']} kN/m", styles["Normal"]))
     content.append(Paragraph(f"Deflection: {data['deflection']}", styles["Normal"]))
     content.append(Spacer(1, 10))
 

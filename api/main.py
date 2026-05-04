@@ -39,6 +39,7 @@ def predict(data: dict):
     load_type = params.get("load_type", "udl")
     load_position = params.get("load_position")
     point_load = params.get("point_load", 0)
+    overhang_length = params.get("overhang_length") or 0
 
     # ── Step 1: Estimate beam size (needed for self-weight) ──
     beam_size = estimate_beam_size(span, beam_type)
@@ -46,6 +47,11 @@ def predict(data: dict):
     # ── Step 2: Calculate factored loads (BS 8110) ──
     # n1 = slab/user load (UDL), n2 = beam self-weight, n3 = wall load, p1 = point load
     slab_load = params.get("slab_load", 0) or load  # Use slab_load if given, else user's 'load'
+
+    # For overhang + point load only (no UDL from user), set slab_load = 0
+    if beam_type == "overhang" and load_type == "point_load" and not params.get("slab_load"):
+        slab_load = 0
+        point_load = load  # The user's load IS the point load
 
     loads = design_loads(
         slab_load=slab_load,
@@ -61,12 +67,12 @@ def predict(data: dict):
     p1 = loads["p1_point_load"]    # Point load (separate)
 
     # ── Step 3: Calculate design moment (M_udl + M_point) ──
-    moments = design_moment(w, span, beam_type, p1, load_position)
+    moments = design_moment(w, span, beam_type, p1, load_position, overhang_length)
 
     # ── Step 4: AI prediction ──
     input_df = pd.DataFrame([{
         "span": span,
-        "load": w,
+        "load": max(w, 1),  # Ensure non-zero for model
         "fck": fck,
         "fy": fy
     }])
@@ -77,16 +83,22 @@ def predict(data: dict):
     # ── Step 5: Deflection check ──
     deflection_status = check_deflection(span, beam_size["depth"], beam_type)
 
-    # ── Step 6: Shear & diagrams (using total UDL for diagrams) ──
-    shear = max_shear_force(w, span, beam_type, "udl")
+    # ── Step 6: Shear & diagrams ──
+    shear = max_shear_force(w, span, beam_type, "udl", overhang_length=overhang_length)
     x, shear_curve, moment_curve, load_curve = generate_diagrams(
-        w, span, beam_type, "udl"
+        w, span, beam_type, "udl", overhang_length=overhang_length
     )
 
-    # If there's also a point load, add its shear/moment to the diagram
+    # If there's also a point load, generate combined diagrams
     if p1 > 0:
-        shear_p = max_shear_force(p1, span, beam_type, "point_load", load_position)
+        shear_p = max_shear_force(p1, span, beam_type, "point_load", load_position, overhang_length)
         shear = shear + shear_p  # Combined max shear (conservative)
+
+        # For overhang with point load and no UDL, use point load diagrams directly
+        if beam_type == "overhang" and w <= loads["n2_beam_self_weight"] + 0.01:
+            x, shear_curve, moment_curve, load_curve = generate_diagrams(
+                p1, span, beam_type, "point_load", load_position, overhang_length
+            )
 
     return {
         "input": params,
