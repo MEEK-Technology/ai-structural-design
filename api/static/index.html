@@ -20,9 +20,23 @@
 
         <!-- INPUT CARD -->
         <div class="card">
-            <textarea id="prompt" placeholder="Describe your beam design...&#10;&#10;Examples:&#10;• Design a simply supported beam with span 6m, UDL of 25kN/m, concrete grade 30 and steel grade 500&#10;• Design a cantilever beam with span 4m, point load of 30kN at 4m&#10;• Design a continuous beam with span 8m and triangular load of 20kN/m"></textarea>
+            <textarea id="prompt"
+                placeholder="Describe your beam design...&#10;&#10;Examples:&#10;• Design a simply supported beam with span 6m, UDL of 25kN/m, concrete grade 30 and steel grade 500&#10;• Design a cantilever beam with span 4m, point load of 30kN at 4m&#10;• Design a continuous beam with span 8m and triangular load of 20kN/m"></textarea>
             <button onclick="generate()">Generate Design</button>
             <p class="loader" id="loader">Processing...</p>
+        </div>
+
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <h3>Confirm Design Input</h3>
+
+                <div id="parsedData"></div>
+
+                <p>Please confirm the extracted parameters before proceeding.</p>
+
+                <button onclick="confirmGenerate()">Confirm & Generate</button>
+                <button onclick="closeModal()">Cancel</button>
+            </div>
         </div>
 
         <!-- OUTPUT GRID -->
