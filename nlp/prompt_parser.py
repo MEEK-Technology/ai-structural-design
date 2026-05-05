@@ -6,6 +6,26 @@ def extract_parameters(text):
     span_match = re.search(r'span\s*(?:of\s*)?(\d+\.?\d*)\s*m', text, re.IGNORECASE) or \
                  re.search(r'(\d+\.?\d*)\s*m\b(?!\s*(?:Pa|pa|height|thick))', text)
 
+    # ── Multiple spans (e.g., "spans 6m, 5m, 4m" or "spans 6m 5m 4m") ──
+    multi_span_match = re.search(
+        r'spans?\s+(\d+\.?\d*)\s*m[\s,]+(\d+\.?\d*)\s*m(?:[\s,]+(\d+\.?\d*)\s*m)?(?:[\s,]+(\d+\.?\d*)\s*m)?(?:[\s,]+(\d+\.?\d*)\s*m)?',
+        text, re.IGNORECASE
+    )
+
+    # ── Number of spans (e.g., "3-span" or "3 span" or "three span") ──
+    n_span_match = re.search(r'(\d+)[\s-]*span', text, re.IGNORECASE)
+
+    # ── Multiple support types (e.g., "supports: pinned, fixed, roller, pinned") ──
+    multi_support_match = re.search(
+        r'supports?\s*:?\s*((?:(?:pinned|roller|fixed)[\s,]+){1,}(?:pinned|roller|fixed))',
+        text, re.IGNORECASE
+    )
+
+    # ── "fixed at A" or "fixed at start" patterns ──
+    fixed_start_match = re.search(r'fixed\s+(?:at\s+)?(?:A|start|left|first)', text, re.IGNORECASE)
+    fixed_end_match = re.search(r'fixed\s+(?:at\s+)?(?:end|right|last|D|E|F)', text, re.IGNORECASE)
+
+
     # ── Load value (e.g., "25kN/m" or "load 25kN/m" or "50kN" for point load) ──
     load_match = re.search(r'(\d+\.?\d*)\s*kN/?m', text, re.IGNORECASE) or \
                  re.search(r'(?:load|udl)\s*(?:of\s*)?(\d+\.?\d*)', text, re.IGNORECASE)
@@ -137,6 +157,42 @@ def extract_parameters(text):
     if beam_type == "overhang" and free_end_match and overhang_len and span_val:
         load_pos = span_val + overhang_len
 
+    # ── Multi-span extraction (for continuous beams) ──
+    spans_list = None
+    supports_list = None
+
+    if multi_span_match:
+        # Extract all matched span groups (up to 5 spans)
+        spans_list = []
+        for g in range(1, 6):
+            val = multi_span_match.group(g)
+            if val:
+                spans_list.append(float(val))
+        beam_type = "continuous"
+        # Use first span as the primary span value
+        if spans_list and not span_val:
+            span_val = spans_list[0]
+
+    # If continuous but only single span, replicate based on n_span_match
+    if beam_type == "continuous" and not spans_list and span_val:
+        n_spans = int(n_span_match.group(1)) if n_span_match else 2
+        spans_list = [span_val] * n_spans
+
+    # ── Multi-support extraction ──
+    if multi_support_match:
+        raw_supports = re.findall(r'(pinned|roller|fixed)', multi_support_match.group(1), re.IGNORECASE)
+        supports_list = [s.lower() for s in raw_supports]
+
+    # If continuous with spans but no explicit supports, build defaults
+    if beam_type == "continuous" and spans_list and not supports_list:
+        n_supports = len(spans_list) + 1
+        supports_list = ["pinned"] * n_supports
+        # Apply fixed end overrides
+        if fixed_start_match:
+            supports_list[0] = "fixed"
+        if fixed_end_match:
+            supports_list[-1] = "fixed"
+
     return {
         "span": span_val,
         "load": load_value,
@@ -153,6 +209,8 @@ def extract_parameters(text):
         "support_left": support_left,
         "support_right": support_right,
         "overhang_length": overhang_len,
+        "spans": spans_list,
+        "supports": supports_list,
     }
 
 
@@ -178,6 +236,8 @@ def apply_defaults(params):
         "support_left": params.get("support_left", "pinned"),
         "support_right": params.get("support_right", "roller"),
         "overhang_length": params.get("overhang_length"),
+        "spans": params.get("spans"),
+        "supports": params.get("supports"),
     }
 
 

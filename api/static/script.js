@@ -90,6 +90,9 @@ function showModal(params) {
         if (val === null || val === undefined) continue;
         if (val === 0 && ["slab_load", "point_load", "wall_height", "wall_thickness", "overhang_length", "load_position"].includes(key)) continue;
 
+        // For continuous beams, skip single span/support (we show multi-span instead)
+        if (params.spans && ["span", "support_left", "support_right"].includes(key)) continue;
+
         // Format display value
         if (key === "beam_type") val = typeLabels[val] || val;
         if (key === "load_type") val = loadLabels[val] || val;
@@ -103,6 +106,27 @@ function showModal(params) {
             <div class="param-item${fullClass}">
                 <span class="param-label">${label}</span>
                 <span class="param-value${hlClass}">${displayVal}</span>
+            </div>
+        `;
+    }
+
+    // ── Multi-span display for continuous beams ──
+    if (params.spans && params.spans.length > 0) {
+        const spansStr = params.spans.map(s => s + "m").join(" → ");
+        html += `
+            <div class="param-item full-width">
+                <span class="param-label">Spans (${params.spans.length})</span>
+                <span class="param-value highlight">${spansStr}</span>
+            </div>
+        `;
+    }
+
+    if (params.supports && params.supports.length > 0) {
+        const supStr = params.supports.map(s => capitalize(s)).join(" → ");
+        html += `
+            <div class="param-item full-width">
+                <span class="param-label">Supports (${params.supports.length})</span>
+                <span class="param-value">${supStr}</span>
             </div>
         `;
     }
@@ -165,8 +189,15 @@ async function generate(prompt) {
             typeLabels[data.input.beam_type] || data.input.beam_type;
         document.getElementById("loadType").innerText =
             loadLabels[data.input.load_type] || data.input.load_type;
-        document.getElementById("support").innerText =
-            capitalize(data.input.support_left) + " — " + capitalize(data.input.support_right);
+
+        // Support display — continuous vs single-span
+        if (data.continuous) {
+            const supStr = data.continuous.supports.map(s => capitalize(s)).join(" → ");
+            document.getElementById("support").innerText = supStr;
+        } else {
+            document.getElementById("support").innerText =
+                capitalize(data.input.support_left) + " — " + capitalize(data.input.support_right);
+        }
 
         // ── Load Breakdown ──
         document.getElementById("n1").innerText = data.results.n1_slab_load + " kN/m";
@@ -191,8 +222,43 @@ async function generate(prompt) {
 
         document.getElementById("deflection").innerText = data.deflection;
 
+        // ── Continuous Beam Extra Data ──
+        const contDiv = document.getElementById("continuousData");
+        if (data.continuous && contDiv) {
+            let html = `<h4 style="margin-top:12px; opacity:0.8;">Continuous Beam Analysis (Three-Moment Theorem)</h4>`;
+            html += `<div class="result-item"><strong>Spans:</strong> ${data.continuous.spans.map(s => s + "m").join(" + ")} (${data.continuous.n_spans}-span)</div>`;
+
+            // Support moments table
+            html += `<div class="result-item"><strong>Support Moments:</strong></div>`;
+            for (let i = 0; i < data.continuous.support_moments.length; i++) {
+                const label = String.fromCharCode(65 + i); // A, B, C, D...
+                const m = data.continuous.support_moments[i];
+                html += `<div class="result-item">&nbsp;&nbsp;M<sub>${label}</sub> = ${m.toFixed(2)} kNm</div>`;
+            }
+
+            // Reactions table
+            html += `<div class="result-item"><strong>Support Reactions:</strong></div>`;
+            for (let i = 0; i < data.continuous.reactions.length; i++) {
+                const label = String.fromCharCode(65 + i);
+                const r = data.continuous.reactions[i];
+                html += `<div class="result-item">&nbsp;&nbsp;R<sub>${label}</sub> = ${r.toFixed(2)} kN</div>`;
+            }
+
+            contDiv.innerHTML = html;
+            contDiv.style.display = "block";
+        } else if (contDiv) {
+            contDiv.innerHTML = "";
+            contDiv.style.display = "none";
+        }
+
         drawCharts(data.graphs);
-        drawBeamDiagram(data.input);
+
+        // Draw beam diagram — multi-span or single-span
+        if (data.continuous) {
+            drawContinuousBeamDiagram(data.continuous);
+        } else {
+            drawBeamDiagram(data.input);
+        }
 
     } catch (error) {
         console.error("Error:", error);
@@ -541,6 +607,138 @@ function drawTriangularLoad(ctx, startX, endX, beamY, load) {
     ctx.fillText(`${load} kN/m (max)`, endX - 70, beamY - 45);
 }
 
+
+// ═══════════════════════════════════════════════
+//  MULTI-SPAN BEAM DIAGRAM
+// ═══════════════════════════════════════════════
+
+function drawContinuousBeamDiagram(contData) {
+    const canvas = document.getElementById("beamCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    // Resize canvas for multi-span
+    const totalLength = contData.spans.reduce((a, b) => a + b, 0);
+    canvas.width = Math.max(600, 100 + contData.spans.length * 160);
+    canvas.height = 200;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const marginL = 50;
+    const marginR = 50;
+    const beamY = 100;
+    const usableW = canvas.width - marginL - marginR;
+
+    // Scale: pixels per meter
+    const scale = usableW / totalLength;
+
+    // ── Draw beam line ──
+    ctx.strokeStyle = "#3b82f6";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(marginL, beamY);
+    ctx.lineTo(marginL + totalLength * scale, beamY);
+    ctx.stroke();
+
+    // ── Draw supports ──
+    let xPos = marginL;
+    ctx.lineWidth = 2;
+
+    for (let i = 0; i < contData.supports.length; i++) {
+        const supType = contData.supports[i];
+        const label = String.fromCharCode(65 + i); // A, B, C, D...
+
+        if (supType === "fixed") {
+            drawFixedSupport(ctx, xPos, beamY);
+        } else {
+            drawTriangleSupport(ctx, xPos, beamY);
+        }
+
+        // Label
+        ctx.fillStyle = "#10b981";
+        ctx.font = "bold 14px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(label, xPos, beamY + 45);
+
+        // Move to next support
+        if (i < contData.spans.length) {
+            xPos += contData.spans[i] * scale;
+        }
+    }
+
+    // ── Draw span labels ──
+    let xLabel = marginL;
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "12px Arial";
+    ctx.textAlign = "center";
+
+    for (let i = 0; i < contData.spans.length; i++) {
+        const spanPx = contData.spans[i] * scale;
+        const midX = xLabel + spanPx / 2;
+
+        // Span dimension line
+        ctx.strokeStyle = "#94a3b8";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(xLabel + 5, beamY - 30);
+        ctx.lineTo(xLabel + spanPx - 5, beamY - 30);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Span label
+        ctx.fillStyle = "#f59e0b";
+        ctx.font = "bold 12px Arial";
+        ctx.fillText(contData.spans[i] + "m", midX, beamY - 35);
+
+        xLabel += spanPx;
+    }
+
+    // ── Support moments (show non-zero) ──
+    xPos = marginL;
+    ctx.font = "11px Arial";
+    ctx.fillStyle = "#ef4444";
+    ctx.textAlign = "center";
+
+    for (let i = 0; i < contData.support_moments.length; i++) {
+        const m = contData.support_moments[i];
+        if (Math.abs(m) > 0.01) {
+            ctx.fillText("M=" + m.toFixed(1), xPos, beamY - 55);
+        }
+        if (i < contData.spans.length) {
+            xPos += contData.spans[i] * scale;
+        }
+    }
+}
+
+function drawTriangleSupport(ctx, x, y) {
+    ctx.strokeStyle = "#10b981";
+    ctx.fillStyle = "transparent";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - 12, y + 25);
+    ctx.lineTo(x + 12, y + 25);
+    ctx.closePath();
+    ctx.stroke();
+}
+
+function drawFixedSupport(ctx, x, y) {
+    ctx.strokeStyle = "#10b981";
+    ctx.lineWidth = 3;
+    // Vertical wall
+    ctx.beginPath();
+    ctx.moveTo(x, y - 20);
+    ctx.lineTo(x, y + 25);
+    ctx.stroke();
+    // Hatching
+    ctx.lineWidth = 1;
+    for (let i = -15; i <= 20; i += 8) {
+        ctx.beginPath();
+        ctx.moveTo(x, y + i);
+        ctx.lineTo(x - 10, y + i + 8);
+        ctx.stroke();
+    }
+}
 
 async function downloadReport() {
     const prompt = document.getElementById("prompt").value;

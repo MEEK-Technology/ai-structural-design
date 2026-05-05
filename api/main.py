@@ -55,6 +55,112 @@ def predict(data: dict):
     point_load = params.get("point_load", 0)
     overhang_length = params.get("overhang_length") or 0
 
+    # ═══════════════════════════════════════════════
+    #  CONTINUOUS BEAM → Three-Moment Solver
+    # ═══════════════════════════════════════════════
+    if beam_type == "continuous" and params.get("spans"):
+        from rules.continuous_beam import solve_three_moment, merge_diagrams
+
+        spans_list = params["spans"]
+        supports_list = params.get("supports") or ["pinned"] * (len(spans_list) + 1)
+
+        # Estimate beam size from the longest span
+        max_span = max(spans_list)
+        beam_size = estimate_beam_size(max_span, beam_type)
+
+        # Calculate factored loads (BS 8110)
+        slab_load = params.get("slab_load", 0) or load
+        loads_data = design_loads(
+            slab_load=slab_load,
+            beam_width_mm=beam_size["width"],
+            beam_depth_mm=beam_size["depth"],
+            wall_density=params.get("density", 0),
+            wall_thickness=params.get("wall_thickness", 0),
+            wall_height=params.get("wall_height", 0),
+            point_load=point_load,
+        )
+
+        w = loads_data["w_total_udl"]
+        p1 = loads_data["p1_point_load"]
+
+        # Build per-span loading list
+        span_loads = []
+        for s in spans_list:
+            if load_type == "point_load" and p1 > 0:
+                span_loads.append({"type": "point_load", "P": p1, "a": s / 2})
+            else:
+                span_loads.append({"type": "udl", "w": w})
+
+        # Solve using Three-Moment Theorem
+        result = solve_three_moment(spans_list, span_loads, supports_list)
+
+        # Merge diagrams for plotting
+        x, shear_curve, moment_curve, load_curve = merge_diagrams(result["diagrams"])
+
+        # AI prediction
+        input_df = pd.DataFrame([{
+            "span": max_span,
+            "load": max(w, 1),
+            "fck": fck,
+            "fy": fy
+        }])
+        steel_area = model.predict(input_df)[0]
+        best_reinf, options = recommend_reinforcement(steel_area)
+
+        # Deflection check
+        deflection_status = check_deflection(max_span, beam_size["depth"], beam_type)
+
+        return {
+            "input": params,
+
+            "beam": {
+                "width": beam_size["width"],
+                "depth": beam_size["depth"]
+            },
+
+            "loading": loads_data,
+
+            "continuous": {
+                "spans": spans_list,
+                "supports": supports_list,
+                "support_moments": result["moments"],
+                "reactions": result["reactions"],
+                "n_spans": len(spans_list),
+            },
+
+            "results": {
+                "steel_area": round(float(steel_area), 2),
+                "bending_moment": result["max_moment"],
+                "M_udl": result["max_moment"],
+                "M_point": 0,
+                "max_shear_force": result["max_shear"],
+                "n1_slab_load": loads_data["n1_slab_load"],
+                "n2_beam_self_weight": loads_data["n2_beam_self_weight"],
+                "n3_wall_load": loads_data["n3_wall_load"],
+                "w_total_udl": loads_data["w_total_udl"],
+                "p1_point_load": loads_data["p1_point_load"],
+            },
+
+            "deflection": deflection_status,
+
+            "reinforcement": {
+                "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
+                "provided_area": best_reinf["provided_area"],
+                "all_options": options
+            },
+
+            "graphs": {
+                "x": x,
+                "shear": shear_curve,
+                "moment": moment_curve,
+                "load": load_curve
+            }
+        }
+
+    # ═══════════════════════════════════════════════
+    #  SINGLE-SPAN BEAMS (existing logic)
+    # ═══════════════════════════════════════════════
+
     # ── Step 1: Estimate beam size (needed for self-weight) ──
     beam_size = estimate_beam_size(span, beam_type)
 
