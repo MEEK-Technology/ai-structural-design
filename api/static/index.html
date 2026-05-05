@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Beam Design System</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -21,9 +21,30 @@
         <!-- INPUT CARD -->
         <div class="card">
             <textarea id="prompt"
-                placeholder="Describe your beam design...&#10;&#10;Examples:&#10;• Design a simply supported beam with span 6m, UDL of 25kN/m, concrete grade 30 and steel grade 500&#10;• Design a cantilever beam with span 4m, point load of 30kN at 4m&#10;• Design a continuous beam with span 8m and triangular load of 20kN/m"></textarea>
-            <button onclick="generate()">Generate Design</button>
+                placeholder="Describe your beam design...&#10;&#10;Examples:&#10;• Design a simply supported beam with span 6m, UDL of 25kN/m, concrete grade 30 and steel grade 500&#10;• Design a cantilever beam with span 4m, point load of 30kN at 4m&#10;• A beam AB of span 6m with overhang BC of 2m, point load of 10kN at free end C"></textarea>
+            <button id="generateBtn" onclick="handleGenerate()">Generate Design</button>
             <p class="loader" id="loader">Processing...</p>
+        </div>
+
+        <!-- PARSED PARAMETERS MODAL -->
+        <div id="parseModal" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <h3>📋 Confirm Parsed Parameters</h3>
+                    <span class="modal-close" onclick="closeModal()">&times;</span>
+                </div>
+
+                <p class="modal-subtitle">The system extracted the following from your prompt. Please review before generating.</p>
+
+                <div id="parsedParams" class="parsed-grid">
+                    <!-- Filled by JS -->
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-confirm" onclick="confirmGenerate()">✅ Confirm &amp; Generate</button>
+                    <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                </div>
+            </div>
         </div>
 
         <!-- OUTPUT GRID -->
@@ -87,7 +108,7 @@
         </p>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=2"></script>
 </body>
 
 </html>

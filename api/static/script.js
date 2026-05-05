@@ -1,27 +1,147 @@
 let shearChart, momentChart, loadChart;
 
-async function generate() {
+// Store parsed params between modal steps
+let pendingParams = null;
+
+// ═══════════════════════════════════════════════
+//  STEP 1: Parse prompt → Show modal
+// ═══════════════════════════════════════════════
+
+async function handleGenerate() {
+    const prompt = document.getElementById("prompt").value.trim();
+    if (!prompt) {
+        alert("Please enter a beam design prompt first.");
+        return;
+    }
+
+    const loader = document.getElementById("loader");
+    loader.style.display = "block";
+
     try {
-        const prompt = document.getElementById("prompt").value;
+        const response = await fetch("/parse", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: prompt })
+        });
+
+        const data = await response.json();
+        loader.style.display = "none";
+
+        if (data.error) {
+            alert("Parsing Error: " + data.error);
+            return;
+        }
+
+        pendingParams = data.parsed;
+        showModal(data.parsed);
+
+    } catch (error) {
+        console.error("Parse error:", error);
+        loader.style.display = "none";
+        alert("Failed to parse prompt. Check console for details.");
+    }
+}
+
+
+// ═══════════════════════════════════════════════
+//  MODAL FUNCTIONS
+// ═══════════════════════════════════════════════
+
+function showModal(params) {
+    const grid = document.getElementById("parsedParams");
+
+    // Parameter definitions: [key, label, unit, highlight?]
+    const fields = [
+        ["beam_type",       "Beam Type",        "",    true],
+        ["load_type",       "Load Type",        "",    true],
+        ["span",            "Span",             "m",   false],
+        ["load",            "Load",             "kN/m", false],
+        ["slab_load",       "Slab Load (n1)",   "kN/m", false],
+        ["point_load",      "Point Load (p1)",  "kN",  false],
+        ["load_position",   "Load Position",    "m",   false],
+        ["overhang_length", "Overhang Length",   "m",   false],
+        ["fcu",             "Concrete (fcu)",   "N/mm²", false],
+        ["fy",              "Steel (fy)",       "N/mm²", false],
+        ["support_left",    "Left Support",     "",    false],
+        ["support_right",   "Right Support",    "",    false],
+        ["wall_height",     "Wall Height",      "m",   false],
+        ["wall_thickness",  "Wall Thickness",   "m",   false],
+        ["density",         "Wall Density",     "kN/m³", false],
+    ];
+
+    const typeLabels = {
+        "simply_supported": "Simply Supported",
+        "cantilever": "Cantilever",
+        "continuous": "Continuous",
+        "overhang": "Overhang"
+    };
+    const loadLabels = {
+        "udl": "UDL (Uniformly Distributed)",
+        "point_load": "Point Load",
+        "triangular": "Triangular"
+    };
+
+    let html = "";
+
+    for (const [key, label, unit, highlight] of fields) {
+        let val = params[key];
+
+        // Skip null/zero optional fields
+        if (val === null || val === undefined) continue;
+        if (val === 0 && ["slab_load", "point_load", "wall_height", "wall_thickness", "overhang_length", "load_position"].includes(key)) continue;
+
+        // Format display value
+        if (key === "beam_type") val = typeLabels[val] || val;
+        if (key === "load_type") val = loadLabels[val] || val;
+        if (key === "support_left" || key === "support_right") val = capitalize(val);
+
+        const displayVal = unit ? `${val} ${unit}` : val;
+        const hlClass = highlight ? " highlight" : "";
+        const fullClass = (key === "beam_type" || key === "load_type") ? " full-width" : "";
+
+        html += `
+            <div class="param-item${fullClass}">
+                <span class="param-label">${label}</span>
+                <span class="param-value${hlClass}">${displayVal}</span>
+            </div>
+        `;
+    }
+
+    grid.innerHTML = html;
+
+    // Show modal
+    document.getElementById("parseModal").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("parseModal").classList.remove("active");
+    pendingParams = null;
+}
+
+// ═══════════════════════════════════════════════
+//  STEP 2: Confirm → Run full design
+// ═══════════════════════════════════════════════
+
+async function confirmGenerate() {
+    closeModal();
+    const prompt = document.getElementById("prompt").value;
+    await generate(prompt);
+}
+
+async function generate(prompt) {
+    try {
         const loader = document.getElementById("loader");
-
         loader.style.display = "block";
-
-        console.log("Sending prompt:", prompt); // DEBUG
 
         const response = await fetch("/predict", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prompt: prompt })
         });
 
         const data = await response.json();
 
         loader.style.display = "none";
-
-        console.log("Response:", data); // DEBUG
 
         if (data.error) {
             alert("Error: " + data.error);
@@ -76,7 +196,7 @@ async function generate() {
 
     } catch (error) {
         console.error("Error:", error);
-        loader.style.display = "none";
+        document.getElementById("loader").style.display = "none";
         alert("Something went wrong. Check your console and try again!\nMake sure you're connected to the internet to load graphs.");
     }
 }

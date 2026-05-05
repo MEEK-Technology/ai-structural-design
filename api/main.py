@@ -17,6 +17,20 @@ app = FastAPI()
 model = joblib.load("model.pkl")
 
 
+@app.post("/parse")
+def parse_prompt(data: dict):
+    """Parse a prompt and return extracted parameters for user confirmation."""
+    try:
+        if "prompt" not in data:
+            return JSONResponse(status_code=400, content={"error": "No prompt provided."})
+
+        params = extract_parameters(data["prompt"])
+        params = apply_defaults(params)
+        return {"parsed": params}
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+
 @app.post("/predict")
 def predict(data: dict):
 
