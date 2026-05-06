@@ -34,7 +34,8 @@
                     <span class="modal-close" onclick="closeModal()">&times;</span>
                 </div>
 
-                <p class="modal-subtitle">The system extracted the following from your prompt. Please review before generating.</p>
+                <p class="modal-subtitle">The system extracted the following from your prompt. Please review before
+                    generating.</p>
 
                 <div id="parsedParams" class="parsed-grid">
                     <!-- Filled by JS -->
@@ -50,59 +51,62 @@
         <!-- OUTPUT GRID -->
         <div class="grid">
 
-            <div class="flex">
+            <!-- <div class="flex"> -->
 
-                <!-- RESULTS -->
-                <div class="card">
-                    <h3>Results</h3>
+            <!-- RESULTS -->
+            <div class="card">
+                <h3>Results</h3>
 
-                    <div class="result-item"><strong>Beam Type:</strong> <span id="beamType"></span></div>
-                    <div class="result-item"><strong>Load Type:</strong> <span id="loadType"></span></div>
-                    <div class="result-item"><strong>Support:</strong> <span id="support"></span></div>
+                <div class="result-item"><strong>Beam Type:</strong> <span id="beamType"></span></div>
+                <div class="result-item"><strong>Load Type:</strong> <span id="loadType"></span></div>
+                <div class="result-item"><strong>Support:</strong> <span id="support"></span></div>
 
-                    <h4 style="margin-top:12px; opacity:0.8;">Load Breakdown (BS 8110)</h4>
-                    <div class="result-item">n1 — Slab Load: <span id="n1"></span></div>
-                    <div class="result-item">n2 — Beam Self-Weight: <span id="n2"></span></div>
-                    <div class="result-item">n3 — Wall Load: <span id="n3"></span></div>
-                    <div class="result-item"><strong>w — Total UDL:</strong> <span id="wTotal"></span></div>
-                    <div class="result-item">p1 — Point Load: <span id="p1"></span></div>
+                <h4 style="margin-top:12px; opacity:0.8;">Load Breakdown (BS 8110)</h4>
+                <div class="result-item">n1 — Slab Load: <span id="n1"></span></div>
+                <div class="result-item">n2 — Beam Self-Weight: <span id="n2"></span></div>
+                <div class="result-item">n3 — Wall Load: <span id="n3"></span></div>
+                <div class="result-item"><strong>w — Total UDL:</strong> <span id="wTotal"></span></div>
+                <div class="result-item">p1 — Point Load: <span id="p1"></span></div>
 
-                    <h4 style="margin-top:12px; opacity:0.8;">Design Results</h4>
-                    <div class="result-item">M (UDL): <span id="mUdl"></span></div>
-                    <div class="result-item">M (Point): <span id="mPoint"></span></div>
-                    <div class="result-item"><strong>M (Total):</strong> <span id="moment"></span></div>
-                    <div class="result-item">Max Shear: <span id="shear"></span></div>
-                    <div class="result-item">Steel Area: <span id="steel"></span></div>
-                    <div class="result-item"><strong>Reinforcement: </strong> <span id="reinf"></span></div>
+                <h4 style="margin-top:12px; opacity:0.8;">Design Results</h4>
+                <div class="result-item">M (UDL): <span id="mUdl"></span></div>
+                <div class="result-item">M (Point): <span id="mPoint"></span></div>
+                <div class="result-item"><strong>M (Total):</strong> <span id="moment"></span></div>
+                <div class="result-item">Max Shear: <span id="shear"></span></div>
+                <div class="result-item">Steel Area: <span id="steel"></span></div>
+                <div class="result-item"><strong>Reinforcement: </strong> <span id="reinf"></span></div>
 
-                    <div class="result-item"><strong>Beam Size: </strong> <span id="beam"></span></div>
+                <div class="result-item"><strong>Beam Size: </strong> <span id="beam"></span></div>
 
-                    <div class="result-item"><strong>Deflection Check:</strong> <span id="deflection"></span></div>
+                <div class="result-item"><strong>Deflection Check:</strong> <span id="deflection"></span></div>
 
-                    <div id="continuousData" style="display:none;"></div>
+                <div id="continuousData" style="display:none;"></div>
 
-                    <button onclick="downloadReport()">Download PDF</button>
-                </div>
-
-                <!-- BEAM UI -->
-                <div class="card">
-                    <h3>Beam Diagram</h3>
-                    <canvas id="beamCanvas" width="500" height="200"></canvas>
-                </div>
-
+                <button onclick="downloadReport()">Download PDF</button>
             </div>
+
+            <!-- </div> -->
 
             <!-- GRAPHS -->
             <div class="card">
                 <h3>Graphs</h3>
 
                 <canvas id="loadChart"></canvas>
+                <br>
+                <br>
                 <canvas id="shearChart"></canvas>
+                <br>
+                <br>
                 <canvas id="momentChart"></canvas>
             </div>
 
         </div>
 
+        <!-- BEAM UI -->
+        <div class="card">
+            <h3>Beam Diagram</h3>
+            <canvas id="beamCanvas" width="500" height="200"></canvas>
+        </div>
 
         <p style="text-align:center; opacity:0.6;">
             A Final Year Project by David, Nurudeen, Waliy, & Abbas | Supervisor: Dr. H. I. Adebakin | All rights
