@@ -650,8 +650,10 @@ function drawContinuousBeamDiagram(contData) {
 
         if (supType === "fixed") {
             drawFixedSupport(ctx, xPos, beamY);
+        } else if (supType === "roller") {
+            drawRollerSupport(ctx, xPos, beamY);
         } else {
-            drawTriangleSupport(ctx, xPos, beamY);
+            drawPinnedSupport(ctx, xPos, beamY);
         }
 
         // Label
@@ -711,31 +713,75 @@ function drawContinuousBeamDiagram(contData) {
     }
 }
 
-function drawTriangleSupport(ctx, x, y) {
+function drawPinnedSupport(ctx, x, y) {
     ctx.strokeStyle = "#10b981";
+    ctx.lineWidth = 2;
     ctx.fillStyle = "transparent";
+
+    // Triangle
     ctx.beginPath();
     ctx.moveTo(x, y);
-    ctx.lineTo(x - 12, y + 25);
-    ctx.lineTo(x + 12, y + 25);
+    ctx.lineTo(x - 12, y + 22);
+    ctx.lineTo(x + 12, y + 22);
     ctx.closePath();
+    ctx.stroke();
+
+    // Ground line under triangle
+    ctx.beginPath();
+    ctx.moveTo(x - 16, y + 25);
+    ctx.lineTo(x + 16, y + 25);
+    ctx.stroke();
+
+    // Small hatching lines under ground
+    for (let i = -12; i <= 12; i += 6) {
+        ctx.beginPath();
+        ctx.moveTo(x + i, y + 25);
+        ctx.lineTo(x + i - 4, y + 30);
+        ctx.stroke();
+    }
+}
+
+function drawRollerSupport(ctx, x, y) {
+    ctx.strokeStyle = "#f59e0b";
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "transparent";
+
+    // Triangle
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - 12, y + 18);
+    ctx.lineTo(x + 12, y + 18);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Circle (roller) underneath
+    ctx.beginPath();
+    ctx.arc(x, y + 24, 5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Ground line under circle
+    ctx.beginPath();
+    ctx.moveTo(x - 16, y + 30);
+    ctx.lineTo(x + 16, y + 30);
     ctx.stroke();
 }
 
 function drawFixedSupport(ctx, x, y) {
-    ctx.strokeStyle = "#10b981";
+    ctx.strokeStyle = "#ef4444";
     ctx.lineWidth = 3;
+
     // Vertical wall
     ctx.beginPath();
     ctx.moveTo(x, y - 20);
     ctx.lineTo(x, y + 25);
     ctx.stroke();
-    // Hatching
-    ctx.lineWidth = 1;
-    for (let i = -15; i <= 20; i += 8) {
+
+    // Hatching lines
+    ctx.lineWidth = 1.5;
+    for (let i = -15; i <= 20; i += 7) {
         ctx.beginPath();
         ctx.moveTo(x, y + i);
-        ctx.lineTo(x - 10, y + i + 8);
+        ctx.lineTo(x - 10, y + i + 7);
         ctx.stroke();
     }
 }
