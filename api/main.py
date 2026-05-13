@@ -7,7 +7,8 @@ import pandas as pd
 from nlp.prompt_parser import extract_parameters, apply_defaults
 from rules.beam_design import (
     bending_moment, recommend_reinforcement, estimate_beam_size,
-    generate_diagrams, max_shear_force, design_loads, design_moment
+    generate_diagrams, max_shear_force, design_loads, design_moment,
+    design_bending_reinforcement, design_reinforcement_with_resize, effective_depth
 )
 from api.report import generate_pdf
 
@@ -97,25 +98,116 @@ def predict(data: dict):
         # Merge diagrams for plotting
         x, shear_curve, moment_curve, load_curve = merge_diagrams(result["diagrams"])
 
-        # AI prediction
-        input_df = pd.DataFrame([{
-            "span": max_span,
-            "load": max(w, 1),
-            "fck": fck,
-            "fy": fy
-        }])
-        steel_area = model.predict(input_df)[0]
-        best_reinf, options = recommend_reinforcement(steel_area)
+        # ══════════════════════════════════════════════
+        #  BS 8110 Reinforcement Design — per location
+        # ══════════════════════════════════════════════
+        b_mm = beam_size["width"]
+        h_mm = beam_size["depth"]
+        resized = False
 
-        # Deflection check
-        deflection_status = check_deflection(max_span, beam_size["depth"], beam_type)
+        # First check if beam section is adequate for the largest moment
+        max_abs_moment = result["max_moment"]
+        check_result = design_bending_reinforcement(max_abs_moment, b_mm, h_mm, fck, fy)
+        if not check_result["adequate"]:
+            # Resize beam to accommodate the largest moment
+            check_result, b_mm, h_mm, resized = design_reinforcement_with_resize(
+                max_abs_moment, b_mm, h_mm, fck, fy
+            )
+            beam_size = {"width": b_mm, "depth": h_mm}
+            # Recalculate loads with new beam size
+            loads_data = design_loads(
+                slab_load=slab_load,
+                beam_width_mm=b_mm,
+                beam_depth_mm=h_mm,
+                wall_density=params.get("density", 0),
+                wall_thickness=params.get("wall_thickness", 0),
+                wall_height=params.get("wall_height", 0),
+                point_load=point_load,
+            )
+            w = loads_data["w_total_udl"]
+            p1 = loads_data["p1_point_load"]
+
+            # Rebuild span loads and re-solve with updated UDL
+            span_loads = []
+            for s in spans_list:
+                if load_type == "point_load" and p1 > 0:
+                    span_loads.append({"type": "point_load", "P": p1, "a": s / 2})
+                else:
+                    span_loads.append({"type": "udl", "w": w})
+            result = solve_three_moment(spans_list, span_loads, supports_list)
+            x, shear_curve, moment_curve, load_curve = merge_diagrams(result["diagrams"])
+
+        # ── Design reinforcement at each support (hogging moments) ──
+        support_designs = []
+        for i, M_sup in enumerate(result["moments"]):
+            label = chr(65 + i)  # A, B, C, D...
+            if abs(M_sup) > 0.01:
+                rd = design_bending_reinforcement(M_sup, b_mm, h_mm, fck, fy)
+                best_r, opts = recommend_reinforcement(rd["As_req"])
+                support_designs.append({
+                    "location": f"Support {label}",
+                    "type": "hogging",
+                    "M": rd["M"],
+                    "K": rd["K"],
+                    "K_used": rd["K_used"],
+                    "z": rd["z"],
+                    "As_req": rd["As_req"],
+                    "reinforcement": f"{best_r['bars']}Y{best_r['diameter']}",
+                    "As_prov": best_r["provided_area"],
+                })
+            else:
+                support_designs.append({
+                    "location": f"Support {label}",
+                    "type": "hogging",
+                    "M": 0.0, "K": 0, "K_used": 0, "z": 0,
+                    "As_req": 0, "reinforcement": "N/A", "As_prov": 0,
+                })
+
+        # ── Design reinforcement at each span (sagging moments) ──
+        span_designs = []
+        for i, diag in enumerate(result["diagrams"]):
+            label_l = chr(65 + i)
+            label_r = chr(65 + i + 1)
+            span_name = f"Span {label_l}-{label_r}"
+
+            # Max sagging moment = max positive moment in the span
+            max_sag = max(diag["moment"])  # positive = sagging
+            if max_sag < 0.01:
+                max_sag = max(abs(v) for v in diag["moment"])
+
+            rd = design_bending_reinforcement(max_sag, b_mm, h_mm, fck, fy)
+            best_r, opts = recommend_reinforcement(rd["As_req"])
+            span_designs.append({
+                "location": span_name,
+                "type": "sagging",
+                "M": rd["M"],
+                "K": rd["K"],
+                "K_used": rd["K_used"],
+                "z": rd["z"],
+                "As_req": rd["As_req"],
+                "reinforcement": f"{best_r['bars']}Y{best_r['diameter']}",
+                "As_prov": best_r["provided_area"],
+                "span_length": spans_list[i],
+            })
+
+        # ── Overall governing reinforcement (largest As) ──
+        all_designs = support_designs + span_designs
+        governing = max(all_designs, key=lambda d: d["As_req"])
+        best_reinf, options = recommend_reinforcement(governing["As_req"])
+
+        # ── Deflection check (use span with largest sagging moment) ──
+        major_span_design = max(span_designs, key=lambda d: d["M"])
+        deflection_status = check_deflection(
+            major_span_design["span_length"], beam_size["depth"], beam_type
+        )
 
         return {
             "input": params,
 
             "beam": {
                 "width": beam_size["width"],
-                "depth": beam_size["depth"]
+                "depth": beam_size["depth"],
+                "resized": resized,
             },
 
             "loading": loads_data,
@@ -126,10 +218,23 @@ def predict(data: dict):
                 "support_moments": result["moments"],
                 "reactions": result["reactions"],
                 "n_spans": len(spans_list),
+                "support_designs": support_designs,
+                "span_designs": span_designs,
+            },
+
+            "design": {
+                "M": governing["M"],
+                "Mu": check_result["Mu"],
+                "adequate": check_result["adequate"],
+                "d": check_result["d"],
+                "K": governing["K"],
+                "K_used": governing["K_used"],
+                "z": governing["z"],
+                "message": check_result["message"],
             },
 
             "results": {
-                "steel_area": round(float(steel_area), 2),
+                "steel_area": governing["As_req"],
                 "bending_moment": result["max_moment"],
                 "M_udl": result["max_moment"],
                 "M_point": 0,
@@ -146,6 +251,7 @@ def predict(data: dict):
             "reinforcement": {
                 "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
                 "provided_area": best_reinf["provided_area"],
+                "required_area": governing["As_req"],
                 "all_options": options
             },
 
@@ -189,16 +295,18 @@ def predict(data: dict):
     # ── Step 3: Calculate design moment (M_udl + M_point) ──
     moments = design_moment(w, span, beam_type, p1, load_position, overhang_length)
 
-    # ── Step 4: AI prediction ──
-    input_df = pd.DataFrame([{
-        "span": span,
-        "load": max(w, 1),  # Ensure non-zero for model
-        "fck": fck,
-        "fy": fy
-    }])
+    # ── Step 4: BS 8110 Bending Reinforcement Design ──
+    M_total = moments["M_total"]
+    reinf_result, final_w, final_d, resized = design_reinforcement_with_resize(
+        M_total, beam_size["width"], beam_size["depth"], fck, fy
+    )
 
-    steel_area = model.predict(input_df)[0]
-    best_reinf, options = recommend_reinforcement(steel_area)
+    # If beam was resized, update beam_size
+    if resized:
+        beam_size = {"width": final_w, "depth": final_d}
+
+    As_req = reinf_result["As_req"]
+    best_reinf, options = recommend_reinforcement(As_req)
 
     # ── Step 5: Deflection check ──
     deflection_status = check_deflection(span, beam_size["depth"], beam_type)
@@ -225,14 +333,26 @@ def predict(data: dict):
 
         "beam": {
             "width": beam_size["width"],
-            "depth": beam_size["depth"]
+            "depth": beam_size["depth"],
+            "resized": resized,
         },
 
         "loading": loads,
         "moments": moments,
 
+        "design": {
+            "M": reinf_result["M"],
+            "Mu": reinf_result["Mu"],
+            "adequate": reinf_result["adequate"],
+            "d": reinf_result["d"],
+            "K": reinf_result["K"],
+            "K_used": reinf_result["K_used"],
+            "z": reinf_result["z"],
+            "message": reinf_result["message"],
+        },
+
         "results": {
-            "steel_area": round(float(steel_area), 2),
+            "steel_area": reinf_result["As_req"],
             "bending_moment": moments["M_total"],
             "M_udl": moments["M_udl"],
             "M_point": moments["M_point"],
@@ -249,6 +369,7 @@ def predict(data: dict):
         "reinforcement": {
             "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
             "provided_area": best_reinf["provided_area"],
+            "required_area": reinf_result["As_req"],
             "all_options": options
         },
 

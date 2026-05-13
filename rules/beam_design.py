@@ -414,12 +414,130 @@ def shear_force(load, span, x):
 
 
 # ──────────────────────────────────────────────
-#  Steel Area (manual calculation)
+#  BS 8110 Bending Reinforcement Design
 # ──────────────────────────────────────────────
+
+# Cover assumption: 25mm cover + 8mm link + half bar ≈ 40mm
+DEFAULT_COVER = 25   # mm
+DEFAULT_LINK = 8     # mm
+DEFAULT_BAR  = 16    # mm (assumed main bar for effective depth calc)
+
+
+def effective_depth(total_depth_mm, cover=DEFAULT_COVER, link=DEFAULT_LINK, bar=DEFAULT_BAR):
+    """
+    Calculate effective depth d = h - cover - link - bar/2
+    Returns d in mm.
+    """
+    return total_depth_mm - cover - link - bar / 2
+
+
+def design_bending_reinforcement(M_kNm, b_mm, h_mm, fcu, fy,
+                                  cover=DEFAULT_COVER, link=DEFAULT_LINK, bar=DEFAULT_BAR):
+    """
+    BS 8110 bending reinforcement design for a singly reinforced section.
+
+    Parameters:
+    -----------
+    M_kNm  : design moment (kNm) — always use the absolute value
+    b_mm   : beam width (mm)
+    h_mm   : beam total depth (mm)
+    fcu    : concrete cube strength (N/mm²)
+    fy     : steel yield strength (N/mm²)
+    cover  : concrete cover to links (mm)
+    link   : link diameter (mm)
+    bar    : assumed main bar diameter (mm)
+
+    Returns:
+    --------
+    dict with:
+        M        : design moment (kNm)
+        Mu       : moment of resistance (kNm)
+        adequate : True if M ≤ Mu (section is adequate)
+        d        : effective depth (mm)
+        K        : M / (fcu × b × d²)  — capped at 0.156
+        z        : lever arm (mm) — capped at 0.95d
+        As_req   : required steel area (mm²)
+        message  : human-readable status
+    """
+    M = abs(M_kNm)
+    b = b_mm
+    d = effective_depth(h_mm, cover, link, bar)
+
+    # ── Step 1: Moment of resistance ──
+    # Mu = 0.156 × fcu × b × d²  (for balanced/max singly reinforced section)
+    Mu_Nmm = 0.156 * fcu * b * d**2
+    Mu_kNm = Mu_Nmm / 1e6
+
+    adequate = M <= Mu_kNm
+
+    # ── Step 2: K constant ──
+    M_Nmm = M * 1e6
+    K = M_Nmm / (fcu * b * d**2)
+
+    # K must not exceed 0.156 (singly reinforced limit)
+    K_used = min(K, 0.156)
+
+    # ── Step 3: Lever arm z ──
+    inner = 0.25 - K_used / 0.9
+    if inner < 0:
+        inner = 0  # safety fallback
+    z = d * (0.5 + math.sqrt(inner))
+
+    # z must not exceed 0.95d
+    z = min(z, 0.95 * d)
+
+    # ── Step 4: Area of steel As ──
+    As_req = M_Nmm / (0.95 * fy * z)
+
+    message = "Section adequate (M <= Mu)" if adequate else \
+              f"Section inadequate (M={M:.1f} > Mu={Mu_kNm:.1f}). Increase beam section."
+
+    return {
+        "M": round(M, 2),
+        "Mu": round(Mu_kNm, 2),
+        "adequate": adequate,
+        "d": round(d, 1),
+        "K": round(K, 5),
+        "K_used": round(K_used, 5),
+        "z": round(z, 2),
+        "As_req": round(As_req, 2),
+        "message": message,
+    }
+
+
+def design_reinforcement_with_resize(M_kNm, b_mm, h_mm, fcu, fy):
+    """
+    Design bending reinforcement, automatically increasing beam section
+    if the design moment exceeds the moment of resistance.
+
+    Tries increasing depth first, then width, following standard progressions.
+
+    Returns (reinforcement_result, final_width, final_depth, resized)
+    """
+    width = b_mm
+    depth = h_mm
+
+    for w in STANDARD_WIDTHS:
+        if w < width:
+            continue
+        for d in STANDARD_DEPTHS:
+            if d < depth and w == width:
+                continue
+            result = design_bending_reinforcement(M_kNm, w, d, fcu, fy)
+            if result["adequate"]:
+                resized = (w != b_mm or d != h_mm)
+                return result, w, d, resized
+
+    # Fallback: use largest size available
+    result = design_bending_reinforcement(
+        M_kNm, STANDARD_WIDTHS[-1], STANDARD_DEPTHS[-1], fcu, fy
+    )
+    return result, STANDARD_WIDTHS[-1], STANDARD_DEPTHS[-1], True
+
 
 def steel_area(Mu, fy, d):
     """
-    Calculate steel area (mm²)
+    Calculate steel area (mm²) — legacy/simplified.
     Mu: bending moment (kNm)
     fy: yield strength (MPa)
     d: effective depth (mm)
@@ -429,21 +547,15 @@ def steel_area(Mu, fy, d):
     return Mu_Nmm / (0.87 * fy * z)
 
 
-# ──────────────────────────────────────────────
-#  Design Beam (legacy helper)
-# ──────────────────────────────────────────────
-
 def design_beam(load, span, fy=500, d=450):
-    """
-    Main function
-    """
+    """Legacy helper — kept for backward compatibility."""
     Mu = bending_moment(load, span)
     As = steel_area(Mu, fy, d)
-
     return {
         "bending_moment": round(Mu, 2),
         "steel_area": round(As, 2)
     }
+
 
 
 # ──────────────────────────────────────────────

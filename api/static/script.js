@@ -211,16 +211,43 @@ async function generate(prompt) {
         document.getElementById("mPoint").innerText = data.results.M_point + " kNm";
         document.getElementById("moment").innerText = data.results.bending_moment + " kNm";
         document.getElementById("shear").innerText = data.results.max_shear_force + " kN";
-        document.getElementById("steel").innerText = data.results.steel_area + " mm²";
+        document.getElementById("steel").innerText = data.results.steel_area + " mm\u00B2";
 
         document.getElementById("reinf").innerText =
             data.reinforcement.recommended +
-            " (As: " + data.reinforcement.provided_area + " mm²)";
+            " (As_prov: " + data.reinforcement.provided_area + " mm\u00B2)";
 
-        document.getElementById("beam").innerText =
-            data.beam.width + "mm x " + data.beam.depth + "mm";
+        // Beam size (with resize indicator)
+        let beamText = data.beam.width + "mm x " + data.beam.depth + "mm";
+        if (data.beam.resized) beamText += " (RESIZED)";
+        document.getElementById("beam").innerText = beamText;
 
         document.getElementById("deflection").innerText = data.deflection;
+
+        // ── BS 8110 Design Breakdown ──
+        const designDiv = document.getElementById("designData");
+        if (data.design && designDiv) {
+            let html = `<h4 style="margin-top:12px; opacity:0.8;">BS 8110 Bending Design</h4>`;
+            html += `<div class="result-item">M<sub>u</sub> (Moment of Resistance): <strong>${data.design.Mu} kNm</strong></div>`;
+            html += `<div class="result-item">d (Effective Depth): <strong>${data.design.d} mm</strong></div>`;
+            html += `<div class="result-item">K = M/(f<sub>cu</sub>bd\u00B2): <strong>${data.design.K}</strong>`;
+            if (data.design.K !== data.design.K_used) {
+                html += ` (capped at ${data.design.K_used})`;
+            }
+            html += `</div>`;
+            html += `<div class="result-item">z (Lever Arm): <strong>${data.design.z} mm</strong></div>`;
+            html += `<div class="result-item">A<sub>s</sub> required: <strong>${data.results.steel_area} mm\u00B2</strong></div>`;
+            html += `<div class="result-item">A<sub>s</sub> provided: <strong>${data.reinforcement.provided_area} mm\u00B2</strong></div>`;
+
+            const statusColor = data.design.adequate ? "#10b981" : "#ef4444";
+            html += `<div class="result-item" style="color:${statusColor};"><strong>${data.design.message}</strong></div>`;
+
+            designDiv.innerHTML = html;
+            designDiv.style.display = "block";
+        } else if (designDiv) {
+            designDiv.innerHTML = "";
+            designDiv.style.display = "none";
+        }
 
         // ── Continuous Beam Extra Data ──
         const contDiv = document.getElementById("continuousData");
@@ -231,7 +258,7 @@ async function generate(prompt) {
             // Support moments table
             html += `<div class="result-item"><strong>Support Moments:</strong></div>`;
             for (let i = 0; i < data.continuous.support_moments.length; i++) {
-                const label = String.fromCharCode(65 + i); // A, B, C, D...
+                const label = String.fromCharCode(65 + i);
                 const m = data.continuous.support_moments[i];
                 html += `<div class="result-item">&nbsp;&nbsp;M<sub>${label}</sub> = ${m.toFixed(2)} kNm</div>`;
             }
@@ -242,6 +269,55 @@ async function generate(prompt) {
                 const label = String.fromCharCode(65 + i);
                 const r = data.continuous.reactions[i];
                 html += `<div class="result-item">&nbsp;&nbsp;R<sub>${label}</sub> = ${r.toFixed(2)} kN</div>`;
+            }
+
+            // ── Per-Location Reinforcement Design Table ──
+            if (data.continuous.support_designs || data.continuous.span_designs) {
+                html += `<h4 style="margin-top:12px; opacity:0.8;">Reinforcement Design (Per Location)</h4>`;
+                html += `<table style="width:100%; border-collapse:collapse; margin:8px 0; font-size:13px;">`;
+                html += `<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
+                    <th style="text-align:left; padding:4px;">Location</th>
+                    <th style="text-align:left; padding:4px;">Type</th>
+                    <th style="text-align:right; padding:4px;">M (kNm)</th>
+                    <th style="text-align:right; padding:4px;">K</th>
+                    <th style="text-align:right; padding:4px;">z (mm)</th>
+                    <th style="text-align:right; padding:4px;">As_req</th>
+                    <th style="text-align:left; padding:4px;">Reinf.</th>
+                </tr></thead><tbody>`;
+
+                // Support designs (hogging)
+                if (data.continuous.support_designs) {
+                    for (const sd of data.continuous.support_designs) {
+                        if (sd.As_req > 0) {
+                            html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#ef4444;">
+                                <td style="padding:3px 4px;">${sd.location}</td>
+                                <td style="padding:3px 4px;">${sd.type}</td>
+                                <td style="text-align:right; padding:3px 4px;">${sd.M.toFixed(2)}</td>
+                                <td style="text-align:right; padding:3px 4px;">${sd.K.toFixed(5)}</td>
+                                <td style="text-align:right; padding:3px 4px;">${sd.z.toFixed(1)}</td>
+                                <td style="text-align:right; padding:3px 4px;">${sd.As_req.toFixed(1)}</td>
+                                <td style="padding:3px 4px;">${sd.reinforcement}</td>
+                            </tr>`;
+                        }
+                    }
+                }
+
+                // Span designs (sagging)
+                if (data.continuous.span_designs) {
+                    for (const sd of data.continuous.span_designs) {
+                        html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#10b981;">
+                            <td style="padding:3px 4px;">${sd.location}</td>
+                            <td style="padding:3px 4px;">${sd.type}</td>
+                            <td style="text-align:right; padding:3px 4px;">${sd.M.toFixed(2)}</td>
+                            <td style="text-align:right; padding:3px 4px;">${sd.K.toFixed(5)}</td>
+                            <td style="text-align:right; padding:3px 4px;">${sd.z.toFixed(1)}</td>
+                            <td style="text-align:right; padding:3px 4px;">${sd.As_req.toFixed(1)}</td>
+                            <td style="padding:3px 4px;">${sd.reinforcement}</td>
+                        </tr>`;
+                    }
+                }
+
+                html += `</tbody></table>`;
             }
 
             contDiv.innerHTML = html;
