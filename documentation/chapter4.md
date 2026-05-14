@@ -735,3 +735,37 @@ The system was validated using three test cases:
 
 All test results verified equilibrium (ΣReactions = Total Applied Load) and section adequacy checks.
 
+
+## 4.23 Automatic UI Reset on New Design Generation
+
+### 4.23.1 Problem
+
+When a user generates a design and then enters a new prompt without refreshing the page, stale data from the previous design (results, graphs, beam diagrams) would remain visible and could overlap with or be confused for the new results. Chart.js instances would also accumulate in memory, potentially causing rendering glitches.
+
+### 4.23.2 Solution
+
+An automatic reset mechanism (`resetUI()`) was implemented that executes at the start of every new design generation. When the user clicks "Confirm & Generate" in the modal, the system clears all cached data before the new API call is made.
+
+### 4.23.3 What is Cleared
+
+The reset function performs the following actions:
+
+| Component | Action |
+|---|---|
+| **Result text fields** | All span elements (beam type, load values, moments, shear, steel area, reinforcement, beam size, deflection) are cleared to empty strings |
+| **BS 8110 Design section** | The `designData` container is emptied and hidden |
+| **Continuous Beam section** | The `continuousData` container (support moments, reactions, reinforcement table) is emptied and hidden |
+| **Chart.js graphs** | All three chart instances (Load, Shear Force, Bending Moment diagrams) are destroyed to free memory and prevent overlay issues |
+| **Beam diagram canvas** | The HTML5 Canvas is cleared using `clearRect()` to remove the previous beam visualization |
+
+### 4.23.4 Implementation
+
+The `resetUI()` function is called as the first action inside the `generate()` function, before the loading spinner appears and before the API request is sent. This ensures the user sees a clean interface while the new design is being computed.
+
+This approach guarantees that:
+
+1. No stale data from a previous design is ever displayed alongside new results
+2. Chart.js instances are properly destroyed, preventing memory leaks
+3. The beam diagram canvas is cleared, preventing old support symbols from persisting
+4. The transition between consecutive designs is smooth and unambiguous
+

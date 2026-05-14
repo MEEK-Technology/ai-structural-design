@@ -152,8 +152,53 @@ async function confirmGenerate() {
     await generate(prompt);
 }
 
+
+// ═══════════════════════════════════════════════
+//  RESET UI — clear all previous results & charts
+// ═══════════════════════════════════════════════
+
+function resetUI() {
+    // Clear text result fields
+    const textIds = [
+        "beamType", "loadType", "support",
+        "n1", "n2", "n3", "wTotal", "p1",
+        "mUdl", "mPoint", "moment", "shear", "steel",
+        "reinf", "beam", "deflection"
+    ];
+    textIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = "";
+    });
+
+    // Hide & clear dynamic sections
+    const dynamicIds = ["designData", "continuousData"];
+    dynamicIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.innerHTML = "";
+            el.style.display = "none";
+        }
+    });
+
+    // Destroy existing Chart.js instances
+    if (shearChart)  { shearChart.destroy();  shearChart  = null; }
+    if (momentChart) { momentChart.destroy(); momentChart = null; }
+    if (loadChart)   { loadChart.destroy();   loadChart   = null; }
+
+    // Clear beam diagram canvas
+    const canvas = document.getElementById("beamCanvas");
+    if (canvas) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+}
+
+
 async function generate(prompt) {
     try {
+        // Reset all previous results before generating new ones
+        resetUI();
+
         const loader = document.getElementById("loader");
         loader.style.display = "block";
 
