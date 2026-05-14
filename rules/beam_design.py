@@ -645,3 +645,166 @@ def estimate_beam_size(span, beam_type="simply_supported"):
         "width": width,
         "depth": depth
     }
+
+
+# ──────────────────────────────────────────────
+#  BS 8110 Deflection Check (Table 3.9)
+# ──────────────────────────────────────────────
+
+# Table 3.9 — Basic span/effective depth ratios
+_BASIC_SPAN_DEPTH_RATIOS = {
+    "cantilever":        7,
+    "simply_supported": 20,
+    "continuous":       26,
+    "overhang":         20,
+}
+
+
+def check_deflection_bs8110(span_m, b_mm, h_mm, M_kNm, As_req, As_prov,
+                             fy, beam_type="simply_supported", beta_b=1.0):
+    """
+    BS 8110 deflection check using Table 3.9, service stress & modification factor.
+
+    Parameters:
+    -----------
+    span_m   : beam span (m)
+    b_mm     : beam width (mm)
+    h_mm     : beam total depth (mm)
+    M_kNm    : design moment (kNm) — the major moment for the span
+    As_req   : required area of steel (mm²)
+    As_prov  : provided area of steel (mm²)
+    fy       : steel yield strength (N/mm²)
+    beam_type: "simply_supported", "cantilever", "continuous", "overhang"
+    beta_b   : ratio of redistributed moment to elastic moment (default 1.0)
+
+    Returns:
+    --------
+    dict with:
+        status       : "SAFE" or "NOT SAFE"
+        basic_ratio  : basic span/d ratio from Table 3.9
+        actual_ratio : actual span/d ratio
+        allowable_ratio : basic_ratio × MF
+        fs           : service stress (N/mm²)
+        MF           : modification factor (capped at 2.0)
+        MF_uncapped  : raw modification factor before capping
+        d            : effective depth (mm)
+        message      : human-readable result
+    """
+    M = abs(M_kNm)
+    d = effective_depth(h_mm)
+    b = b_mm
+
+    # ── Table 3.9: Basic span/effective depth ratio ──
+    basic_ratio = _BASIC_SPAN_DEPTH_RATIOS.get(beam_type, 20)
+
+    # ── Service Stress (fs) ──
+    # fs = (2/3) × fy × (As_req / As_prov) × (1 / βb)
+    if As_prov > 0:
+        fs = (2.0 / 3.0) * fy * (As_req / As_prov) * (1.0 / beta_b)
+    else:
+        fs = (2.0 / 3.0) * fy
+
+    # ── Modification Factor (MF) ──
+    # MF = 0.55 + (477 - fs) / [120 × (0.9 + M/(bd²))]
+    M_Nmm = M * 1e6
+    denominator = 120.0 * (0.9 + M_Nmm / (b * d**2))
+    if denominator > 0:
+        MF_raw = 0.55 + (477.0 - fs) / denominator
+    else:
+        MF_raw = 2.0
+
+    # MF must not be greater than 2.0
+    MF = min(MF_raw, 2.0)
+
+    # ── Deflection Check ──
+    actual_ratio = (span_m * 1000) / d
+    allowable_ratio = basic_ratio * MF
+
+    if actual_ratio <= allowable_ratio:
+        status = "SAFE"
+        message = (f"Deflection OK: actual span/d = {actual_ratio:.2f} ≤ "
+                   f"allowable = {allowable_ratio:.2f} "
+                   f"(basic {basic_ratio} × MF {MF:.3f})")
+    else:
+        status = "NOT SAFE"
+        message = (f"Deflection FAILS: actual span/d = {actual_ratio:.2f} > "
+                   f"allowable = {allowable_ratio:.2f} "
+                   f"(basic {basic_ratio} × MF {MF:.3f}). "
+                   f"Increase As_prov or beam depth.")
+
+    return {
+        "status": status,
+        "basic_ratio": basic_ratio,
+        "actual_ratio": round(actual_ratio, 2),
+        "allowable_ratio": round(allowable_ratio, 2),
+        "fs": round(fs, 2),
+        "MF": round(MF, 4),
+        "MF_uncapped": round(MF_raw, 4),
+        "d": round(d, 1),
+        "message": message,
+    }
+
+
+def deflection_check_with_fix(span_m, b_mm, h_mm, M_kNm, As_req, As_prov_initial,
+                               fy, fcu, beam_type="simply_supported"):
+    """
+    Perform BS 8110 deflection check and attempt fixes if it fails.
+
+    Strategy:
+    1. Check deflection with current As_prov
+    2. If MF > 2.0 or deflection fails: try increasing As_prov (next bar size up)
+    3. If still failing: increase beam depth and recalculate
+
+    Returns:
+    --------
+    (deflection_result, As_prov_final, h_final, reinf_recommendation, was_fixed)
+    """
+    As_prov = As_prov_initial
+    h = h_mm
+
+    # ── Attempt 1: Check with current reinforcement ──
+    result = check_deflection_bs8110(span_m, b_mm, h, M_kNm, As_req, As_prov,
+                                      fy, beam_type)
+
+    if result["status"] == "SAFE":
+        best_reinf, options = recommend_reinforcement(As_prov)
+        return result, As_prov, h, best_reinf, False
+
+    # ── Attempt 2: Increase As_prov (try larger bar combinations) ──
+    # Progressively increase As_prov by trying multiples until MF ≤ 2 and deflection passes
+    bar_sizes = [10, 12, 16, 20, 25, 32]
+    for diameter in bar_sizes:
+        area_bar = (math.pi * diameter**2) / 4
+        for num_bars in range(1, 15):
+            trial_As = num_bars * area_bar
+            if trial_As < As_req:
+                continue  # must at least meet As_req
+            trial_result = check_deflection_bs8110(
+                span_m, b_mm, h, M_kNm, As_req, trial_As, fy, beam_type
+            )
+            if trial_result["status"] == "SAFE":
+                best_reinf, options = recommend_reinforcement(trial_As)
+                return trial_result, trial_As, h, best_reinf, True
+
+    # ── Attempt 3: Increase beam depth ──
+    for new_depth in STANDARD_DEPTHS:
+        if new_depth <= h:
+            continue
+        # Recalculate reinforcement for new depth
+        reinf = design_bending_reinforcement(M_kNm, b_mm, new_depth, fcu, fy)
+        new_As_req = reinf["As_req"]
+        best_reinf, options = recommend_reinforcement(new_As_req)
+        new_As_prov = best_reinf["provided_area"]
+
+        trial_result = check_deflection_bs8110(
+            span_m, b_mm, new_depth, M_kNm, new_As_req, new_As_prov,
+            fy, beam_type
+        )
+        if trial_result["status"] == "SAFE":
+            return trial_result, new_As_prov, new_depth, best_reinf, True
+
+    # Fallback: return the last result even if failing
+    result = check_deflection_bs8110(span_m, b_mm, h, M_kNm, As_req, As_prov,
+                                      fy, beam_type)
+    best_reinf, options = recommend_reinforcement(As_prov)
+    return result, As_prov, h, best_reinf, False

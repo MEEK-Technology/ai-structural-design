@@ -8,7 +8,8 @@ from nlp.prompt_parser import extract_parameters, apply_defaults
 from rules.beam_design import (
     bending_moment, recommend_reinforcement, estimate_beam_size,
     generate_diagrams, max_shear_force, design_loads, design_moment,
-    design_bending_reinforcement, design_reinforcement_with_resize, effective_depth
+    design_bending_reinforcement, design_reinforcement_with_resize, effective_depth,
+    check_deflection_bs8110, deflection_check_with_fix
 )
 from api.report import generate_pdf
 
@@ -197,9 +198,14 @@ def predict(data: dict):
 
         # ── Deflection check (use span with largest sagging moment) ──
         major_span_design = max(span_designs, key=lambda d: d["M"])
-        deflection_status = check_deflection(
-            major_span_design["span_length"], beam_size["depth"], beam_type
+
+        # BS 8110 deflection: use major span moment, governing As
+        defl_result = check_deflection_bs8110(
+            major_span_design["span_length"], b_mm, beam_size["depth"],
+            major_span_design["M"], major_span_design["As_req"],
+            major_span_design["As_prov"], fy, beam_type
         )
+        deflection_status = defl_result["status"]
 
         return {
             "input": params,
@@ -246,7 +252,18 @@ def predict(data: dict):
                 "p1_point_load": loads_data["p1_point_load"],
             },
 
-            "deflection": deflection_status,
+            "deflection": {
+                "status": defl_result["status"],
+                "basic_ratio": defl_result["basic_ratio"],
+                "actual_ratio": defl_result["actual_ratio"],
+                "allowable_ratio": defl_result["allowable_ratio"],
+                "fs": defl_result["fs"],
+                "MF": defl_result["MF"],
+                "MF_uncapped": defl_result["MF_uncapped"],
+                "d": defl_result["d"],
+                "message": defl_result["message"],
+                "fixed": False,
+            },
 
             "reinforcement": {
                 "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",
@@ -308,8 +325,25 @@ def predict(data: dict):
     As_req = reinf_result["As_req"]
     best_reinf, options = recommend_reinforcement(As_req)
 
-    # ── Step 5: Deflection check ──
-    deflection_status = check_deflection(span, beam_size["depth"], beam_type)
+    # ── Step 5: BS 8110 Deflection check (Table 3.9) ──
+    defl_result, As_prov_final, h_final, defl_reinf, defl_fixed = deflection_check_with_fix(
+        span, beam_size["width"], beam_size["depth"],
+        M_total, As_req, best_reinf["provided_area"],
+        fy, fck, beam_type
+    )
+
+    # If deflection fix changed the beam depth or reinforcement, update
+    if defl_fixed:
+        if h_final != beam_size["depth"]:
+            beam_size = {"width": beam_size["width"], "depth": h_final}
+            resized = True
+            # Recalculate reinforcement for new depth
+            reinf_result = design_bending_reinforcement(M_total, beam_size["width"], h_final, fck, fy)
+            As_req = reinf_result["As_req"]
+        best_reinf = defl_reinf
+        best_reinf, options = recommend_reinforcement(As_prov_final)
+
+    deflection_status = defl_result["status"]
 
     # ── Step 6: Shear & diagrams ──
     shear = max_shear_force(w, span, beam_type, "udl", overhang_length=overhang_length)
@@ -364,7 +398,18 @@ def predict(data: dict):
             "p1_point_load": loads["p1_point_load"],
         },
 
-        "deflection": deflection_status,
+        "deflection": {
+            "status": defl_result["status"],
+            "basic_ratio": defl_result["basic_ratio"],
+            "actual_ratio": defl_result["actual_ratio"],
+            "allowable_ratio": defl_result["allowable_ratio"],
+            "fs": defl_result["fs"],
+            "MF": defl_result["MF"],
+            "MF_uncapped": defl_result["MF_uncapped"],
+            "d": defl_result["d"],
+            "message": defl_result["message"],
+            "fixed": defl_fixed,
+        },
 
         "reinforcement": {
             "recommended": f"{best_reinf['bars']}Y{best_reinf['diameter']}",

@@ -769,3 +769,91 @@ This approach guarantees that:
 3. The beam diagram canvas is cleared, preventing old support symbols from persisting
 4. The transition between consecutive designs is smooth and unambiguous
 
+
+## 4.24 BS 8110 Deflection Check (Table 3.9)
+
+### 4.24.1 Overview
+
+The deflection check was upgraded from a simple span-to-depth ratio comparison to a comprehensive BS 8110 compliant procedure using Table 3.9 basic ratios, service stress, and modification factors.
+
+The previous deflection check only compared the beam depth against a basic span/depth limit. The new implementation follows the complete BS 8110 procedure:
+
+1. Determine the **basic span/effective depth ratio** from Table 3.9
+2. Calculate the **service stress** (f<sub>s</sub>)
+3. Compute the **modification factor** (MF)
+4. Compare the **actual span/d ratio** against the **allowable ratio** (basic × MF)
+
+### 4.24.2 Table 3.9 — Basic Span/Effective Depth Ratios
+
+| Support Condition | Basic Ratio |
+|---|---|
+| Cantilever | 7 |
+| Simply Supported | 20 |
+| Continuous | 26 |
+
+### 4.24.3 Service Stress (f<sub>s</sub>)
+
+The service stress in the tension reinforcement is calculated as:
+
+f<sub>s</sub> = (2/3) × f<sub>y</sub> × (A<sub>s,req</sub> / A<sub>s,prov</sub>) × (1/β<sub>b</sub>)
+
+Where:
+- f<sub>y</sub> = characteristic strength of steel reinforcement (N/mm²)
+- A<sub>s,req</sub> = required area of steel (mm²)
+- A<sub>s,prov</sub> = provided area of steel (mm²)
+- β<sub>b</sub> = ratio of redistributed moment to elastic moment (default 1.0)
+
+### 4.24.4 Modification Factor (MF)
+
+The modification factor accounts for the tension reinforcement provided:
+
+MF = 0.55 + (477 − f<sub>s</sub>) / [120 × (0.9 + M/bd²)]
+
+Where:
+- f<sub>s</sub> = service stress (N/mm²)
+- M = design moment (Nmm)
+- b = beam width (mm)
+- d = effective depth (mm)
+
+**Note:** MF must not be greater than 2.0. If the calculated value exceeds 2.0, the value 2.0 is used.
+
+### 4.24.5 Deflection Adequacy
+
+The deflection check compares:
+
+- **Actual span/d ratio** = (span × 1000) / d
+- **Allowable span/d ratio** = basic ratio × MF
+
+If actual ≤ allowable → **SAFE** (deflection is adequate)
+If actual > allowable → **NOT SAFE** (deflection fails)
+
+### 4.24.6 Automatic Correction
+
+If the deflection check fails, the system automatically attempts corrections in the following order:
+
+1. **Increase A<sub>s,prov</sub>:** Try larger bar diameter or more bars to reduce the service stress f<sub>s</sub>, which increases the modification factor MF, thereby increasing the allowable span/d ratio.
+
+2. **Increase beam depth:** If increasing the reinforcement alone cannot satisfy the deflection check, the system increases the beam depth to the next standard size and recalculates the entire design (new d → new K → new z → new A<sub>s</sub> → new deflection check).
+
+The system iterates through these options until a satisfactory design is found, and flags any adjustments in the output.
+
+<p align="center">
+    <a href="images/deflection_check.png">
+        <img src="images/deflection_check.png" alt="BS 8110 deflection check results" width="500" />
+    </a>
+    <br/>
+    <em>Figure 4.24a: BS 8110 deflection check output showing basic span/d ratio (Table 3.9), service stress f<sub>s</sub>, modification factor MF, allowable vs actual span/d ratio, and the final status</em>
+</p>
+
+### 4.24.7 Test Validation
+
+The deflection check was validated across three beam types:
+
+| Beam Type | Span | Basic Ratio | f<sub>s</sub> (N/mm²) | MF | Allowable span/d | Actual span/d | Status |
+|---|---|---|---|---|---|---|---|
+| Simply Supported | 6m | 20 | 293.21 | 0.9863 | 19.73 | 14.67 | SAFE |
+| Continuous (major span) | 8m | 26 | 284.73 | 1.1474 | 29.83 | 19.56 | SAFE |
+| Cantilever | 3m | 7 | 290.80 | 1.0569 | 7.40 | 7.33 | SAFE |
+
+All test cases passed the BS 8110 deflection check with proper service stress and modification factor calculations.
+

@@ -1,4 +1,4 @@
-"""Test BS 8110 reinforcement design for both single-span and continuous beams."""
+"""Test BS 8110 deflection check with service stress and modification factor."""
 
 import json
 import urllib.request
@@ -16,42 +16,32 @@ def test(name, prompt):
         print(f"  ERROR: {e}")
         return
 
-    print(f"\n{'='*60}")
+    print(f"\n{'='*70}")
     print(f"  {name}")
-    print(f"{'='*60}")
+    print(f"{'='*70}")
     print(f"  Beam: {d['beam']['width']}mm x {d['beam']['depth']}mm" +
           (" (RESIZED)" if d['beam'].get('resized') else ""))
 
-    # Design section
-    design = d.get("design", {})
-    if design:
-        print(f"\n  -- BS 8110 Design --")
-        print(f"  M  = {design['M']} kNm")
-        print(f"  Mu = {design['Mu']} kNm ({design['message']})")
-        print(f"  d  = {design['d']} mm")
-        print(f"  K  = {design['K']}  (K_used = {design['K_used']})")
-        print(f"  z  = {design['z']} mm")
-
-    print(f"\n  As_required  = {d['results']['steel_area']} mm2")
-    print(f"  As_provided  = {d['reinforcement']['provided_area']} mm2")
+    print(f"\n  -- Reinforcement --")
+    print(f"  As_req = {d['results']['steel_area']} mm2")
     print(f"  Reinforcement: {d['reinforcement']['recommended']}")
-    print(f"  Deflection:    {d['deflection']}")
+    print(f"  As_prov = {d['reinforcement']['provided_area']} mm2")
 
-    # Continuous beam extra
-    if "continuous" in d:
-        cont = d["continuous"]
-        print(f"\n  -- Per-Location Design (Continuous) --")
-
-        if "support_designs" in cont:
-            for sd in cont["support_designs"]:
-                if sd["As_req"] > 0:
-                    print(f"  {sd['location']:15s}  M={sd['M']:8.2f}  K={sd['K']:.5f}  "
-                          f"z={sd['z']:.1f}  As_req={sd['As_req']:.1f}  -> {sd['reinforcement']}")
-
-        if "span_designs" in cont:
-            for sd in cont["span_designs"]:
-                print(f"  {sd['location']:15s}  M={sd['M']:8.2f}  K={sd['K']:.5f}  "
-                      f"z={sd['z']:.1f}  As_req={sd['As_req']:.1f}  -> {sd['reinforcement']}")
+    defl = d.get("deflection", {})
+    if isinstance(defl, dict):
+        print(f"\n  -- BS 8110 Deflection (Table 3.9) --")
+        print(f"  Basic span/d ratio: {defl['basic_ratio']}")
+        print(f"  Service Stress fs: {defl['fs']} N/mm2")
+        print(f"  Modification Factor MF: {defl['MF']}" +
+              (f" (raw: {defl['MF_uncapped']})" if defl['MF_uncapped'] > 2.0 else ""))
+        print(f"  Allowable span/d: {defl['allowable_ratio']}")
+        print(f"  Actual span/d: {defl['actual_ratio']}")
+        print(f"  Status: {defl['status']}")
+        print(f"  {defl['message'].encode('ascii', 'replace').decode()}")
+        if defl.get('fixed'):
+            print(f"  ** Reinforcement/depth adjusted to satisfy deflection **")
+    else:
+        print(f"  Deflection: {defl}")
 
 
 # --- Test 1: Simply supported beam ---
@@ -62,8 +52,8 @@ test("Simply Supported Beam (6m, 20kN/m)",
 test("Continuous Beam (3 spans: 8m, 6m, 4m)",
      "A 3-span continuous beam with spans 8m, 6m, 4m, UDL 20kN/m, supports: fixed, pinned, roller, pinned")
 
-# --- Test 3: Continuous beam (2 spans, fixed both ends) ---
-test("Continuous Beam (2 spans: 6m, 5m, fixed both ends)",
-     "A 2-span continuous beam with spans 6m, 5m, UDL 15kN/m, fixed at start and fixed at end")
+# --- Test 3: Cantilever ---
+test("Cantilever Beam (3m, 15kN/m)",
+     "A cantilever beam of span 3m with UDL 15kN/m")
 
 print("\n\nDone!")

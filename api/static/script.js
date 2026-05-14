@@ -185,9 +185,11 @@ function resetUI() {
     if (momentChart) { momentChart.destroy(); momentChart = null; }
     if (loadChart)   { loadChart.destroy();   loadChart   = null; }
 
-    // Clear beam diagram canvas
+    // Reset beam diagram canvas (dimensions + content)
     const canvas = document.getElementById("beamCanvas");
     if (canvas) {
+        canvas.width = 600;
+        canvas.height = 200;
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
@@ -267,7 +269,16 @@ async function generate(prompt) {
         if (data.beam.resized) beamText += " (RESIZED)";
         document.getElementById("beam").innerText = beamText;
 
-        document.getElementById("deflection").innerText = data.deflection;
+        // Deflection — now an object with full BS 8110 data
+        const defl = data.deflection;
+        if (typeof defl === "object") {
+            const deflColor = defl.status === "SAFE" ? "#10b981" : "#ef4444";
+            document.getElementById("deflection").innerHTML =
+                `<span style="color:${deflColor}; font-weight:bold;">${defl.status}</span>` +
+                ` (span/d = ${defl.actual_ratio} ≤ ${defl.allowable_ratio})`;
+        } else {
+            document.getElementById("deflection").innerText = defl;
+        }
 
         // ── BS 8110 Design Breakdown ──
         const designDiv = document.getElementById("designData");
@@ -286,6 +297,25 @@ async function generate(prompt) {
 
             const statusColor = data.design.adequate ? "#10b981" : "#ef4444";
             html += `<div class="result-item" style="color:${statusColor};"><strong>${data.design.message}</strong></div>`;
+
+            // ── BS 8110 Deflection Check (Table 3.9) ──
+            if (typeof defl === "object") {
+                html += `<h4 style="margin-top:16px; opacity:0.8;">BS 8110 Deflection Check (Table 3.9)</h4>`;
+                html += `<div class="result-item">Basic span/d ratio (Table 3.9): <strong>${defl.basic_ratio}</strong></div>`;
+                html += `<div class="result-item">Service Stress f<sub>s</sub>: <strong>${defl.fs} N/mm\u00B2</strong></div>`;
+                html += `<div class="result-item">Modification Factor (MF): <strong>${defl.MF}</strong>`;
+                if (defl.MF_uncapped > 2.0) {
+                    html += ` <span style="color:#f59e0b;">(capped from ${defl.MF_uncapped})</span>`;
+                }
+                html += `</div>`;
+                html += `<div class="result-item">Allowable span/d: <strong>${defl.allowable_ratio}</strong> (${defl.basic_ratio} × ${defl.MF})</div>`;
+                html += `<div class="result-item">Actual span/d: <strong>${defl.actual_ratio}</strong></div>`;
+                const deflColor = defl.status === "SAFE" ? "#10b981" : "#ef4444";
+                html += `<div class="result-item" style="color:${deflColor};"><strong>${defl.message}</strong></div>`;
+                if (defl.fixed) {
+                    html += `<div class="result-item" style="color:#f59e0b;"><strong>⚠ Reinforcement/depth adjusted to satisfy deflection</strong></div>`;
+                }
+            }
 
             designDiv.innerHTML = html;
             designDiv.style.display = "block";
@@ -509,6 +539,9 @@ function getMaxPoint(data) {
 
 function drawBeamDiagram(input) {
     const canvas = document.getElementById("beamCanvas");
+    // Reset canvas to default size for single-span beams
+    canvas.width = 600;
+    canvas.height = 200;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
