@@ -857,3 +857,41 @@ The deflection check was validated across three beam types:
 
 All test cases passed the BS 8110 deflection check with proper service stress and modification factor calculations.
 
+
+## 4.25 Enhanced Continuous Beam Diagram Visualization
+
+### 4.25.1 UDL Load Arrows on Continuous Beams
+
+The continuous beam diagram was enhanced to include uniformly distributed load (UDL) arrows pointing downward across all spans. Previously, only single-span beams displayed load arrows; continuous beam diagrams only showed the beam line, supports, and labels.
+
+The enhanced diagram now displays:
+
+- A horizontal top line connecting all arrow starting points
+- Downward-pointing arrows at regular intervals across the entire beam length (~2 arrows per metre)
+- Arrow heads at the bottom of each vertical line to indicate load direction
+- A load value label (e.g., "20 kN/m") centered above the arrows
+
+This visual representation follows standard structural engineering drawing conventions and makes the loading condition immediately clear.
+
+### 4.25.2 Complete Diagram Elements
+
+The updated continuous beam diagram includes all of the following elements:
+
+| Element | Position | Description |
+|---|---|---|
+| **Support moment values** | Top (red) | M=−136.5, M=−102.6, M=−51.4 |
+| **Span length labels** | Above arrows (amber) | 8m, 6m, 4m |
+| **UDL load label** | Above arrows (green) | 20 kN/m |
+| **UDL arrows** | Between label and beam | Downward arrows across all spans |
+| **Beam line** | Centre (blue) | Horizontal line spanning all supports |
+| **Support symbols** | Below beam | Fixed (red), Pinned (green), Roller (amber) |
+| **Support labels** | Below symbols (green) | A, B, C, D |
+
+<p align="center">
+    <a href="images/continuous_udl_diagram.png">
+        <img src="images/continuous_udl_diagram.png" alt="Continuous beam diagram with UDL arrows" width="500" />
+    </a>
+    <br/>
+    <em>Figure 4.25a: Enhanced continuous beam diagram showing UDL load arrows pointing downward across all spans, with support moments, span labels, and mixed support types</em>
+</p>
+
